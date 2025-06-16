@@ -834,7 +834,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• <strong className="text-foreground">View Data:</strong> Browse all student onboarding records in the table</li>
                   <li>• <strong className="text-foreground">Search & Filter:</strong> Use the search box and filters to find specific records</li>
-                  <li>• <strong className="text-foreground">Export Data:</strong> Click "Export" to download the data as CSV file</li>
+                  <li>• <strong className="text-foreground">Export Data:</strong> Click &ldquo;Export&rdquo; to download the data as CSV file</li>
                 </ul>
               </div>
 
@@ -851,20 +851,20 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               <div>
                 <h4 className="text-lg font-semibold text-green-400 mb-3">➕ Adding New Records</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• <strong className="text-foreground">Add Student:</strong> Click "Add Row" button to open the form</li>
+                  <li>• <strong className="text-foreground">Add Student:</strong> Click &ldquo;Add Row&rdquo; button to open the form</li>
                   <li>• <strong className="text-foreground">Auto ID:</strong> Enrollment ID is automatically generated (you can override it)</li>
                   <li>• <strong className="text-foreground">Required Fields:</strong> Full Name and Email are required fields</li>
-                  <li>• <strong className="text-foreground">Save Record:</strong> Click "Add Student" to save the new record</li>
+                  <li>• <strong className="text-foreground">Save Record:</strong> Click &ldquo;Add Student&rdquo; to save the new record</li>
                 </ul>
               </div>
 
               <div>
                 <h4 className="text-lg font-semibold text-red-400 mb-3">🗑️ Deleting Records</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li>• <strong className="text-foreground">Enable Delete Mode:</strong> Click "Delete Row" to show checkboxes</li>
+                  <li>• <strong className="text-foreground">Enable Delete Mode:</strong> Click &ldquo;Delete Row&rdquo; to show checkboxes</li>
                   <li>• <strong className="text-foreground">Select Records:</strong> Check the boxes next to records you want to delete</li>
                   <li>• <strong className="text-foreground">Bulk Selection:</strong> Use the header checkbox to select/deselect all visible records</li>
-                  <li>• <strong className="text-foreground">Confirm Deletion:</strong> Click "Delete (X)" button and confirm the action</li>
+                  <li>• <strong className="text-foreground">Confirm Deletion:</strong> Click &ldquo;Delete (X)&rdquo; button and confirm the action</li>
                   <li>• <strong className="text-red-400">⚠️ Warning:</strong> Deletion is permanent and cannot be undone</li>
                 </ul>
               </div>
@@ -875,7 +875,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                   <li>• <strong className="text-foreground">Global Search:</strong> Search across all fields using the search box</li>
                   <li>• <strong className="text-foreground">Cohort Type Filter:</strong> Filter by Basic, Placement, MERN, or Full Stack</li>
                   <li>• <strong className="text-foreground">Cohort Number Filter:</strong> Filter by specific cohort numbers (e.g., 1.0, 2.0)</li>
-                  <li>• <strong className="text-foreground">Clear Filters:</strong> Set filters to "All Types" and clear search to see all records</li>
+                  <li>• <strong className="text-foreground">Clear Filters:</strong> Set filters to &ldquo;All Types&rdquo; and clear search to see all records</li>
                 </ul>
               </div>
 
