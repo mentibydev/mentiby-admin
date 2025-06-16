@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 2%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 260 100% 65%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 8%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 8%;
+    --muted-foreground: 0 0% 64%;
+    --accent: 0 0% 8%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 12%;
+    --input: 0 0% 8%;
+    --ring: 260 100% 65%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground min-h-screen;
+    background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+  background: linear-gradient(45deg, #6366f1, #8b5cf6);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground;
+}
+
+/* Gradient text utilities */
+.gradient-text {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-purple {
+  background: linear-gradient(135deg, #8b5cf6, #a855f7);
+}
+
+.gradient-blue {
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+}
+
+.gradient-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.gradient-red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.gradient-yellow {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+/* Glow effects */
+.glow-purple {
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.glow-red {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+/* Editable cell styles */
+.editable-cell {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  min-height: 20px;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.editable-cell:hover {
+  background-color: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.editing-cell {
+  background-color: rgba(139, 92, 246, 0.2);
+  border: 2px solid rgba(139, 92, 246, 0.5);
+  border-radius: 6px;
+  padding: 4px 6px;
+  position: relative;
+}
+
+.editing-cell input {
+  background: transparent;
+  border: none;
+  outline: none;
+  width: 100%;
+  color: inherit;
+  font-size: inherit;
+  font-family: inherit;
+  min-width: 60px;
+}
+
+.editing-cell input:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Table specific styling */
+table {
+  table-layout: auto;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+}
+
+/* Ensure proper column widths */
+td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 100px;
+}
+
+td:nth-child(1) { /* Enrollment ID */
+  min-width: 120px;
+}
+
+td:nth-child(2), td:nth-child(3) { /* Cohort Type & Number */
+  min-width: 140px;
+}
+
+td:nth-child(4) { /* Full Name */
+  min-width: 180px;
+}
+
+td:nth-child(5) { /* Email */
+  min-width: 200px;
+}
+
+td:nth-child(15), td:nth-child(16), td:nth-child(17), td:nth-child(18) { /* Long text fields */
+  min-width: 200px;
+  max-width: 300px;
+}
+
+/* Loading indicator for saving */
+.saving-indicator {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  z-index: 10;
+} 
