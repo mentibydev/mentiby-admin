@@ -54,22 +54,22 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
   // Calculate cohort distribution
   const cohortDistribution = useMemo(() => {
     const distribution: Record<string, Record<string, number>> = {}
-    
+
     data.forEach(student => {
       const cohortType = student['Cohort Type']
       const cohortNumber = student['Cohort Number']
-      
+
       if (!distribution[cohortType]) {
         distribution[cohortType] = {}
       }
-      
+
       if (!distribution[cohortType][cohortNumber]) {
         distribution[cohortType][cohortNumber] = 0
       }
-      
+
       distribution[cohortType][cohortNumber]++
     })
-    
+
     return distribution
   }, [data])
 
@@ -91,7 +91,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
   const getChartData = (cohortType: string): ChartData[] => {
     const typeData = cohortDistribution[cohortType] || {}
     const total = Object.values(typeData).reduce((sum, count) => sum + count, 0)
-    
+
     return Object.entries(typeData).map(([cohortNumber, count], index) => ({
       name: `${cohortType} ${cohortNumber}`,
       value: count,
@@ -108,10 +108,10 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
       color: COLORS[type as keyof typeof COLORS],
       percentage: total > 0 ? Math.round(((overallStats.byType[type] || 0) / total) * 100) : 0
     }))
-    
+
     // Debug: Log colors to ensure they're correct
     console.log('Chart Data Colors:', chartData.map(d => ({ name: d.name, color: d.color })))
-    
+
     return chartData
   }
 
@@ -136,9 +136,9 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
       <div className="flex flex-wrap justify-center gap-6 mt-8">
         {payload.map((entry: any, index: number) => (
           <div key={index} className="flex items-center space-x-3 bg-gray-800/40 backdrop-blur-sm border border-gray-600/30 rounded-lg px-4 py-3 hover:bg-gray-700/50 transition-all duration-300">
-            <div 
+            <div
               className="w-7 h-7 rounded-full border-2 border-white/50 flex-shrink-0"
-              style={{ 
+              style={{
                 backgroundColor: entry.color,
                 boxShadow: `0 0 25px ${entry.color}, 0 0 50px ${entry.color}60, inset 0 2px 4px rgba(255,255,255,0.2)`,
                 filter: `brightness(1.1) saturate(1.2)`
@@ -200,22 +200,22 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                   {Math.round(((overallStats.byType[type] || 0) / overallStats.total) * 100)}% of total
                 </p>
               </div>
-              <div 
+              <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
-                style={{ 
+                style={{
                   background: `linear-gradient(135deg, ${GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][0]}, ${GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][1]})`,
                   boxShadow: `0 8px 32px ${COLORS[type as keyof typeof COLORS]}40`
                 }}
               >
-                <PieIcon 
-                  className="w-6 h-6 text-white" 
+                <PieIcon
+                  className="w-6 h-6 text-white"
                 />
               </div>
             </div>
           </div>
         ))}
       </div>
-      
+
       {/* Cohort Type Selector */}
       <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
         <h3 className="text-2xl font-semibold gradient-text mb-6">Detailed Cohort Breakdown</h3>
@@ -238,7 +238,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
         {selectedCohortType && (
           <div className="h-96">
             <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center space-x-2">
-              <div 
+              <div
                 className="w-6 h-6 rounded-full"
                 style={{ backgroundColor: COLORS[selectedCohortType as keyof typeof COLORS] }}
               />
@@ -261,8 +261,8 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                       stroke="rgba(255,255,255,0.2)"
                     >
                       {getChartData(selectedCohortType).map((entry, index) => (
-                        <Cell 
-                          key={`detailed-cell-${index}-${entry.name}`} 
+                        <Cell
+                          key={`detailed-cell-${index}-${entry.name}`}
                           fill={entry.color}
                           stroke={entry.color}
                           strokeWidth={2}
@@ -277,46 +277,46 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              
+
               {/* Floating Mini Stats for Detailed */}
               <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
                 {getChartData(selectedCohortType).map((entry, index) => (
-                  <div 
-                    key={index} 
-                                    className="relative flex items-center space-x-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-2xl border border-white/20 rounded-2xl px-4 py-2.5 hover:scale-105 hover:border-white/30 transition-all duration-500 group overflow-hidden"
-                style={{ 
-                  boxShadow: `0 1px 3px ${entry.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
-                }}
+                  <div
+                    key={index}
+                    className="relative flex items-center space-x-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-2xl border border-white/20 rounded-2xl px-4 py-2.5 hover:scale-105 hover:border-white/30 transition-all duration-500 group overflow-hidden"
+                    style={{
+                      boxShadow: `0 1px 3px ${entry.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
+                    }}
                   >
                     {/* Animated background glow */}
-                    <div 
+                    <div
                       className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl"
-                      style={{ 
+                      style={{
                         background: `radial-gradient(circle at 50% 50%, ${entry.color}60, transparent 70%)`
                       }}
                     />
-                    
+
                     {/* Glowing dot with pulse animation */}
                     <div className="relative">
-                      <div 
+                      <div
                         className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-all duration-300 animate-pulse"
-                        style={{ 
+                        style={{
                           backgroundColor: entry.color,
                           boxShadow: `0 0 15px ${entry.color}80, 0 0 30px ${entry.color}40`
                         }}
                       />
-                      <div 
+                      <div
                         className="absolute inset-0 w-4 h-4 rounded-full opacity-30 group-hover:scale-150 group-hover:opacity-10 transition-all duration-500"
-                        style={{ 
+                        style={{
                           backgroundColor: entry.color,
                           filter: 'blur(4px)'
                         }}
                       />
                     </div>
-                    
+
                     {/* Text content with better hierarchy */}
                     <div className="flex items-center space-x-2 relative z-10">
-                      <span 
+                      <span
                         className="text-sm font-bold tracking-wide group-hover:text-white transition-colors duration-300"
                         style={{ color: entry.color }}
                       >{selectedCohortType} {entry.name.replace(`${selectedCohortType} `, '')}</span>
@@ -328,12 +328,12 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Total Counter for Detailed */}
                 <div className="relative mt-3 flex items-center justify-center bg-gradient-to-r from-purple-600/60 via-blue-600/60 to-purple-600/60 backdrop-blur-2xl border border-purple-400/30 rounded-2xl px-4 py-2 hover:scale-105 transition-all duration-500 group overflow-hidden">
                   {/* Shimmer effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12"></div>
-                  
+
                   <span className="text-purple-200 text-xs font-medium mr-2 relative z-10">TOTAL</span>
                   <div className="w-px h-4 bg-white/30 relative z-10"></div>
                   <span className="text-white text-lg font-black ml-2 relative z-10 tracking-wider">
@@ -355,7 +355,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
           </div>
         )}
       </div>
-      
+
       {/* Overview Chart */}
       <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
         <h3 className="text-2xl font-semibold gradient-text mb-8">Overall Distribution</h3>
@@ -376,8 +376,8 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                   stroke="rgba(255,255,255,0.2)"
                 >
                   {getOverviewChartData().map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}-${entry.name}`} 
+                    <Cell
+                      key={`cell-${index}-${entry.name}`}
                       fill={entry.color}
                       stroke={entry.color}
                       strokeWidth={2}
@@ -392,46 +392,46 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
               </PieChart>
             </ResponsiveContainer>
           </div>
-          
+
           {/* Floating Mini Stats */}
           <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
             {getOverviewChartData().map((entry, index) => (
-              <div 
-                key={index} 
+              <div
+                key={index}
                 className="relative flex items-center space-x-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-2xl border border-white/20 rounded-2xl px-4 py-2.5 hover:scale-105 hover:border-white/30 transition-all duration-500 group overflow-hidden"
-                style={{ 
+                style={{
                   boxShadow: `0 1px 3px ${entry.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
                 }}
               >
                 {/* Animated background glow */}
-                <div 
+                <div
                   className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl"
-                  style={{ 
+                  style={{
                     background: `radial-gradient(circle at 50% 50%, ${entry.color}60, transparent 70%)`
                   }}
                 />
-                
+
                 {/* Glowing dot with pulse animation */}
                 <div className="relative">
-                  <div 
+                  <div
                     className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-all duration-300 animate-pulse"
-                    style={{ 
+                    style={{
                       backgroundColor: entry.color,
                       boxShadow: `0 0 15px ${entry.color}80, 0 0 30px ${entry.color}40`
                     }}
                   />
-                  <div 
+                  <div
                     className="absolute inset-0 w-4 h-4 rounded-full opacity-30 group-hover:scale-150 group-hover:opacity-10 transition-all duration-500"
-                    style={{ 
+                    style={{
                       backgroundColor: entry.color,
                       filter: 'blur(4px)'
                     }}
                   />
                 </div>
-                
+
                 {/* Text content with better hierarchy */}
                 <div className="flex items-center space-x-2 relative z-10">
-                  <span 
+                  <span
                     className="text-sm font-bold tracking-wide group-hover:text-white transition-colors duration-300"
                     style={{ color: entry.color }}
                   >{entry.name}</span>
@@ -443,12 +443,12 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                 </div>
               </div>
             ))}
-            
+
             {/* Total Counter */}
             <div className="relative mt-3 flex items-center justify-center bg-gradient-to-r from-purple-600/60 via-blue-600/60 to-purple-600/60 backdrop-blur-2xl border border-purple-400/30 rounded-2xl px-4 py-2 hover:scale-105 transition-all duration-500 group overflow-hidden">
               {/* Shimmer effect */}
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12"></div>
-              
+
               <span className="text-purple-200 text-xs font-medium mr-2 relative z-10">TOTAL</span>
               <div className="w-px h-4 bg-white/30 relative z-10"></div>
               <span className="text-white text-lg font-black ml-2 relative z-10 tracking-wider">{overallStats.total}</span>

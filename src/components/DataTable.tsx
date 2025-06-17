@@ -42,10 +42,11 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
     try {
       console.log('=== DATABASE DEBUG INFO ===')
 
-      // Get a sample record to see the actual structure
+      // Get the last record based on EnrollmentID (highest year then highest number)
       const { data: sampleData, error: sampleError } = await supabase
         .from('onboarding')
         .select('*')
+        .order('EnrollmentID', { ascending: false })
         .limit(1)
 
       if (sampleError) {
@@ -54,7 +55,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
       }
 
       if (sampleData && sampleData.length > 0) {
-        console.log('Sample record from database:', sampleData[0])
+        console.log('Latest record from database (by EnrollmentID):', sampleData[0])
         console.log('Available columns:', Object.keys(sampleData[0]))
       }
 
@@ -472,7 +473,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
       )
     }
 
-    if (field === 'LinkedIn' || field === 'GitHub') {
+    if (field === 'LinkedIn' || field === 'GitHub' || field === 'Hackerrank') {
       return value ? (
         <a
           href={value.startsWith('http') ? value : `https://${value}`}
