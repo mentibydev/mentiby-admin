@@ -18,10 +18,10 @@ interface ChartData {
 }
 
 const COLORS = {
-  Basic: '#6366f1',
-  Placement: '#10b981',
-  MERN: '#f59e0b',
-  'Full Stack': '#8b5cf6'
+  Basic: '#3b82f6',        // Bright Blue
+  Placement: '#10b981',    // Green
+  MERN: '#f59e0b',         // Orange
+  'Full Stack': '#ff1493'  // Deep Pink
 }
 
 const DETAILED_COLORS = [
@@ -29,21 +29,21 @@ const DETAILED_COLORS = [
   '#10b981', // Green
   '#f59e0b', // Yellow
   '#ef4444', // Red
-  '#8b5cf6', // Purple
+  '#ec4899', // Pink
   '#06b6d4', // Cyan
   '#f97316', // Orange
   '#84cc16', // Lime
-  '#ec4899', // Pink
+  '#a855f7', // Purple
   '#6b7280', // Gray
   '#14b8a6', // Teal
-  '#a855f7', // Violet
+  '#f472b6', // Light Pink
 ]
 
 const GRADIENT_COLORS = {
-  Basic: ['#6366f1', '#4338ca'],
+  Basic: ['#3b82f6', '#2563eb'],
   Placement: ['#10b981', '#059669'],
   MERN: ['#f59e0b', '#d97706'],
-  'Full Stack': ['#8b5cf6', '#7c3aed']
+  'Full Stack': ['#ff1493', '#dc143c']  // Deep Pink gradient
 }
 
 export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
@@ -102,12 +102,17 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
 
   const getOverviewChartData = (): ChartData[] => {
     const total = overallStats.total
-    return cohortTypes.map(type => ({
+    const chartData = cohortTypes.map(type => ({
       name: type,
       value: overallStats.byType[type] || 0,
       color: COLORS[type as keyof typeof COLORS],
       percentage: total > 0 ? Math.round(((overallStats.byType[type] || 0) / total) * 100) : 0
     }))
+    
+    // Debug: Log colors to ensure they're correct
+    console.log('Chart Data Colors:', chartData.map(d => ({ name: d.name, color: d.color })))
+    
+    return chartData
   }
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -128,17 +133,23 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
 
   const CustomLegend = ({ payload }: any) => {
     return (
-      <div className="flex flex-wrap justify-center gap-4 mt-6">
+      <div className="flex flex-wrap justify-center gap-6 mt-8">
         {payload.map((entry: any, index: number) => (
-          <div key={index} className="flex items-center space-x-2">
+          <div key={index} className="flex items-center space-x-3 bg-gray-800/40 backdrop-blur-sm border border-gray-600/30 rounded-lg px-4 py-3 hover:bg-gray-700/50 transition-all duration-300">
             <div 
-              className="w-4 h-4 rounded-full shadow-lg"
-              style={{ backgroundColor: entry.color }}
+              className="w-7 h-7 rounded-full border-2 border-white/50 flex-shrink-0"
+              style={{ 
+                backgroundColor: entry.color,
+                boxShadow: `0 0 25px ${entry.color}, 0 0 50px ${entry.color}60, inset 0 2px 4px rgba(255,255,255,0.2)`,
+                filter: `brightness(1.1) saturate(1.2)`
+              }}
             />
-            <span className="text-foreground font-medium">{entry.value}</span>
-            <span className="text-muted-foreground text-sm">
-              ({entry.payload?.percentage || 0}%)
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-white font-bold text-sm">{entry.value}</span>
+              <span className="text-gray-300 text-xs font-medium">
+                ({entry.payload?.percentage || 0}%)
+              </span>
+            </div>
           </div>
         ))}
       </div>
@@ -233,41 +244,104 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
               />
               <span>{selectedCohortType} Cohort Distribution</span>
             </h4>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <defs>
-                  {getChartData(selectedCohortType).map((entry, index) => (
-                    <linearGradient key={`detailed-gradient-${index}`} id={`detailed-gradient-${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor={entry.color} />
-                      <stop offset="100%" stopColor={`${entry.color}CC`} />
-                    </linearGradient>
-                  ))}
-                </defs>
-                <Pie
-                  data={getChartData(selectedCohortType)}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={80}
-                  outerRadius={140}
-                  paddingAngle={6}
-                  dataKey="value"
-                  strokeWidth={2}
-                  stroke="rgba(255,255,255,0.1)"
-                >
-                  {getChartData(selectedCohortType).map((entry, index) => (
-                    <Cell 
-                      key={`cell-${index}`} 
-                      fill={`url(#detailed-gradient-${index})`}
-                      style={{
-                        filter: `drop-shadow(0 4px 20px ${entry.color}60)`
+            <div className="relative">
+              {/* Detailed Pie Chart */}
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={getChartData(selectedCohortType)}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={80}
+                      outerRadius={140}
+                      paddingAngle={6}
+                      dataKey="value"
+                      strokeWidth={3}
+                      stroke="rgba(255,255,255,0.2)"
+                    >
+                      {getChartData(selectedCohortType).map((entry, index) => (
+                        <Cell 
+                          key={`detailed-cell-${index}-${entry.name}`} 
+                          fill={entry.color}
+                          stroke={entry.color}
+                          strokeWidth={2}
+                          style={{
+                            filter: `drop-shadow(0 4px 20px ${entry.color}60)`,
+                            opacity: 1
+                          }}
+                        />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              
+              {/* Floating Mini Stats for Detailed */}
+              <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
+                {getChartData(selectedCohortType).map((entry, index) => (
+                  <div 
+                    key={index} 
+                                    className="relative flex items-center space-x-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-2xl border border-white/20 rounded-2xl px-4 py-2.5 hover:scale-105 hover:border-white/30 transition-all duration-500 group overflow-hidden"
+                style={{ 
+                  boxShadow: `0 1px 3px ${entry.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
+                }}
+                  >
+                    {/* Animated background glow */}
+                    <div 
+                      className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl"
+                      style={{ 
+                        background: `radial-gradient(circle at 50% 50%, ${entry.color}60, transparent 70%)`
                       }}
                     />
-                  ))}
-                </Pie>
-                <Tooltip content={<CustomTooltip />} />
-                <Legend content={<CustomLegend />} />
-              </PieChart>
-            </ResponsiveContainer>
+                    
+                    {/* Glowing dot with pulse animation */}
+                    <div className="relative">
+                      <div 
+                        className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-all duration-300 animate-pulse"
+                        style={{ 
+                          backgroundColor: entry.color,
+                          boxShadow: `0 0 15px ${entry.color}80, 0 0 30px ${entry.color}40`
+                        }}
+                      />
+                      <div 
+                        className="absolute inset-0 w-4 h-4 rounded-full opacity-30 group-hover:scale-150 group-hover:opacity-10 transition-all duration-500"
+                        style={{ 
+                          backgroundColor: entry.color,
+                          filter: 'blur(4px)'
+                        }}
+                      />
+                    </div>
+                    
+                    {/* Text content with better hierarchy */}
+                    <div className="flex items-center space-x-2 relative z-10">
+                      <span 
+                        className="text-sm font-bold tracking-wide group-hover:text-white transition-colors duration-300"
+                        style={{ color: entry.color }}
+                      >{selectedCohortType} {entry.name.replace(`${selectedCohortType} `, '')}</span>
+                      <div className="w-px h-4 bg-white/20"></div>
+                      <span className="text-white text-sm font-extrabold">{entry.value}</span>
+                      <span className="text-gray-300 text-xs font-medium bg-white/10 px-2 py-0.5 rounded-full">
+                        {entry.percentage}%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Total Counter for Detailed */}
+                <div className="relative mt-3 flex items-center justify-center bg-gradient-to-r from-purple-600/60 via-blue-600/60 to-purple-600/60 backdrop-blur-2xl border border-purple-400/30 rounded-2xl px-4 py-2 hover:scale-105 transition-all duration-500 group overflow-hidden">
+                  {/* Shimmer effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12"></div>
+                  
+                  <span className="text-purple-200 text-xs font-medium mr-2 relative z-10">TOTAL</span>
+                  <div className="w-px h-4 bg-white/30 relative z-10"></div>
+                  <span className="text-white text-lg font-black ml-2 relative z-10 tracking-wider">
+                    {getChartData(selectedCohortType).reduce((sum, item) => sum + item.value, 0)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
@@ -285,42 +359,101 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
       {/* Overview Chart */}
       <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
         <h3 className="text-2xl font-semibold gradient-text mb-8">Overall Distribution</h3>
-        <div className="h-96">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <defs>
-                {cohortTypes.map(type => (
-                  <linearGradient key={type} id={`gradient-${type}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][0]} />
-                    <stop offset="100%" stopColor={GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][1]} />
-                  </linearGradient>
-                ))}
-              </defs>
-              <Pie
-                data={getOverviewChartData()}
-                cx="50%"
-                cy="50%"
-                innerRadius={80}
-                outerRadius={140}
-                paddingAngle={8}
-                dataKey="value"
-                strokeWidth={3}
-                stroke="rgba(255,255,255,0.1)"
+        <div className="relative">
+          {/* Main Pie Chart */}
+          <div className="h-96">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={getOverviewChartData()}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={80}
+                  outerRadius={140}
+                  paddingAngle={8}
+                  dataKey="value"
+                  strokeWidth={3}
+                  stroke="rgba(255,255,255,0.2)"
+                >
+                  {getOverviewChartData().map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}-${entry.name}`} 
+                      fill={entry.color}
+                      stroke={entry.color}
+                      strokeWidth={2}
+                      style={{
+                        filter: `drop-shadow(0 4px 20px ${entry.color}60)`,
+                        opacity: 1
+                      }}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Floating Mini Stats */}
+          <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
+            {getOverviewChartData().map((entry, index) => (
+              <div 
+                key={index} 
+                className="relative flex items-center space-x-3 bg-gradient-to-r from-gray-900/80 via-gray-800/60 to-gray-900/80 backdrop-blur-2xl border border-white/20 rounded-2xl px-4 py-2.5 hover:scale-105 hover:border-white/30 transition-all duration-500 group overflow-hidden"
+                style={{ 
+                  boxShadow: `0 1px 3px ${entry.color}20, inset 0 1px 0 rgba(255,255,255,0.1)`
+                }}
               >
-                {getOverviewChartData().map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={`url(#gradient-${entry.name})`}
-                    style={{
-                      filter: 'drop-shadow(0 4px 20px rgba(139, 92, 246, 0.4))'
+                {/* Animated background glow */}
+                <div 
+                  className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl"
+                  style={{ 
+                    background: `radial-gradient(circle at 50% 50%, ${entry.color}60, transparent 70%)`
+                  }}
+                />
+                
+                {/* Glowing dot with pulse animation */}
+                <div className="relative">
+                  <div 
+                    className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-all duration-300 animate-pulse"
+                    style={{ 
+                      backgroundColor: entry.color,
+                      boxShadow: `0 0 15px ${entry.color}80, 0 0 30px ${entry.color}40`
                     }}
                   />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomTooltip />} />
-              <Legend content={<CustomLegend />} />
-            </PieChart>
-          </ResponsiveContainer>
+                  <div 
+                    className="absolute inset-0 w-4 h-4 rounded-full opacity-30 group-hover:scale-150 group-hover:opacity-10 transition-all duration-500"
+                    style={{ 
+                      backgroundColor: entry.color,
+                      filter: 'blur(4px)'
+                    }}
+                  />
+                </div>
+                
+                {/* Text content with better hierarchy */}
+                <div className="flex items-center space-x-2 relative z-10">
+                  <span 
+                    className="text-sm font-bold tracking-wide group-hover:text-white transition-colors duration-300"
+                    style={{ color: entry.color }}
+                  >{entry.name}</span>
+                  <div className="w-px h-4 bg-white/20"></div>
+                  <span className="text-white text-sm font-extrabold">{entry.value}</span>
+                  <span className="text-gray-300 text-xs font-medium bg-white/10 px-2 py-0.5 rounded-full">
+                    {entry.percentage}%
+                  </span>
+                </div>
+              </div>
+            ))}
+            
+            {/* Total Counter */}
+            <div className="relative mt-3 flex items-center justify-center bg-gradient-to-r from-purple-600/60 via-blue-600/60 to-purple-600/60 backdrop-blur-2xl border border-purple-400/30 rounded-2xl px-4 py-2 hover:scale-105 transition-all duration-500 group overflow-hidden">
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 skew-x-12"></div>
+              
+              <span className="text-purple-200 text-xs font-medium mr-2 relative z-10">TOTAL</span>
+              <div className="w-px h-4 bg-white/30 relative z-10"></div>
+              <span className="text-white text-lg font-black ml-2 relative z-10 tracking-wider">{overallStats.total}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
