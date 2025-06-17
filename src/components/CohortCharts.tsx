@@ -165,50 +165,50 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
-      <div>
-        <h2 className="text-3xl font-bold gradient-text">Cohort Analytics</h2>
-        <p className="text-muted-foreground mt-1">
+      <div className="pt-2 sm:pt-0">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">Cohort Analytics</h2>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           Visual representation of student distribution across cohorts
         </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-        <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6 hover:scale-105 transition-all duration-300 glow-purple">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Total Students</p>
-              <p className="text-3xl font-bold gradient-text">{overallStats.total}</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-6">
+        <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-3 sm:p-6 hover:scale-105 transition-all duration-300 glow-purple col-span-2 sm:col-span-1">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="mb-2 sm:mb-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">Total Students</p>
+              <p className="text-xl sm:text-3xl font-bold gradient-text">{overallStats.total}</p>
             </div>
-            <div className="w-14 h-14 gradient-purple rounded-2xl flex items-center justify-center glow-purple">
-              <Users className="w-7 h-7 text-white" />
+            <div className="w-10 h-10 sm:w-14 sm:h-14 gradient-purple rounded-xl sm:rounded-2xl flex items-center justify-center glow-purple self-end sm:self-auto">
+              <Users className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
             </div>
           </div>
         </div>
 
         {cohortTypes.map(type => (
-          <div key={type} className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6 hover:scale-105 transition-all duration-300">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">{type}</p>
-                <p className="text-2xl font-bold text-foreground">
+          <div key={type} className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-3 sm:p-6 hover:scale-105 transition-all duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-2 sm:mb-0">
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{type}</p>
+                <p className="text-lg sm:text-2xl font-bold text-foreground">
                   {overallStats.byType[type] || 0}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  {Math.round(((overallStats.byType[type] || 0) / overallStats.total) * 100)}% of total
+                  {Math.round(((overallStats.byType[type] || 0) / overallStats.total) * 100)}%
                 </p>
               </div>
               <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center shadow-lg"
+                className="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg self-end sm:self-auto"
                 style={{
                   background: `linear-gradient(135deg, ${GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][0]}, ${GRADIENT_COLORS[type as keyof typeof GRADIENT_COLORS][1]})`,
-                  boxShadow: `0 8px 32px ${COLORS[type as keyof typeof COLORS]}40`
+                  boxShadow: `0 4px 16px ${COLORS[type as keyof typeof COLORS]}40`
                 }}
               >
                 <PieIcon
-                  className="w-6 h-6 text-white"
+                  className="w-4 h-4 sm:w-6 sm:h-6 text-white"
                 />
               </div>
             </div>
@@ -217,16 +217,16 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
       </div>
 
       {/* Cohort Type Selector */}
-      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
-        <h3 className="text-2xl font-semibold gradient-text mb-6">Detailed Cohort Breakdown</h3>
-        <div className="mb-8">
+      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-8">
+        <h3 className="text-xl sm:text-2xl font-semibold gradient-text mb-4 sm:mb-6">Detailed Cohort Breakdown</h3>
+        <div className="mb-6 sm:mb-8">
           <label className="block text-sm font-medium text-foreground mb-3">
             Select Cohort Type for Detailed Analysis
           </label>
           <select
             value={selectedCohortType}
             onChange={(e) => setSelectedCohortType(e.target.value)}
-            className="w-full max-w-md px-4 py-3 bg-input/50 backdrop-blur-sm border border-border/50 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300"
+            className="w-full max-w-md px-3 py-2 sm:px-4 sm:py-3 bg-input/50 backdrop-blur-sm border border-border/50 rounded-xl text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300 text-sm sm:text-base"
           >
             <option value="">Select a cohort type...</option>
             {cohortTypes.map(type => (
@@ -236,28 +236,30 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
         </div>
 
         {selectedCohortType && (
-          <div className="h-96">
-            <h4 className="text-xl font-semibold text-foreground mb-6 flex items-center space-x-2">
+          <div>
+            <h4 className="text-lg sm:text-xl font-semibold text-foreground mb-4 sm:mb-6 flex items-center space-x-2">
               <div
-                className="w-6 h-6 rounded-full"
+                className="w-4 h-4 sm:w-6 sm:h-6 rounded-full"
                 style={{ backgroundColor: COLORS[selectedCohortType as keyof typeof COLORS] }}
               />
-              <span>{selectedCohortType} Cohort Distribution</span>
+              <span className="text-sm sm:text-base lg:text-xl">{selectedCohortType} Cohort Distribution</span>
             </h4>
-            <div className="relative">
+            
+            {/* Chart Container */}
+            <div className="relative h-64 sm:h-80 lg:h-96">
               {/* Detailed Pie Chart */}
-              <div className="h-96">
+              <div className="h-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={getChartData(selectedCohortType)}
                       cx="50%"
                       cy="50%"
-                      innerRadius={80}
-                      outerRadius={140}
-                      paddingAngle={6}
+                      innerRadius="40%"
+                      outerRadius="75%"
+                      paddingAngle={4}
                       dataKey="value"
-                      strokeWidth={3}
+                      strokeWidth={2}
                       stroke="rgba(255,255,255,0.2)"
                     >
                       {getChartData(selectedCohortType).map((entry, index) => (
@@ -279,7 +281,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
               </div>
 
               {/* Floating Mini Stats for Detailed */}
-              <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
+              <div className="absolute top-1/2 left-[70%] sm:left-[75%] -translate-y-1/2 space-y-1 sm:space-y-1.5 hidden sm:block">
                 {getChartData(selectedCohortType).map((entry, index) => (
                   <div
                     key={index}
@@ -342,6 +344,36 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
                 </div>
               </div>
             </div>
+
+            {/* Mobile Stats - Below Chart */}
+            <div className="sm:hidden mt-6 space-y-2">
+              {getChartData(selectedCohortType).map((entry, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between bg-card/30 backdrop-blur-sm border border-border/30 rounded-lg px-3 py-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: entry.color }}
+                    />
+                    <span className="text-sm font-medium text-foreground">
+                      {selectedCohortType} {entry.name.replace(`${selectedCohortType} `, '')}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm font-bold text-foreground">{entry.value}</span>
+                    <span className="text-xs text-muted-foreground">({entry.percentage}%)</span>
+                  </div>
+                </div>
+              ))}
+              <div className="flex items-center justify-between bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg px-3 py-2 mt-3">
+                <span className="text-sm font-medium text-purple-200">Total</span>
+                <span className="text-lg font-bold text-white">
+                  {getChartData(selectedCohortType).reduce((sum, item) => sum + item.value, 0)}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -357,22 +389,22 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
       </div>
 
       {/* Overview Chart */}
-      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-8">
-        <h3 className="text-2xl font-semibold gradient-text mb-8">Overall Distribution</h3>
+      <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-8">
+        <h3 className="text-xl sm:text-2xl font-semibold gradient-text mb-6 sm:mb-8">Overall Distribution</h3>
         <div className="relative">
           {/* Main Pie Chart */}
-          <div className="h-96">
+          <div className="h-64 sm:h-80 lg:h-96">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={getOverviewChartData()}
                   cx="50%"
                   cy="50%"
-                  innerRadius={80}
-                  outerRadius={140}
-                  paddingAngle={8}
+                  innerRadius="40%"
+                  outerRadius="75%"
+                  paddingAngle={6}
                   dataKey="value"
-                  strokeWidth={3}
+                  strokeWidth={2}
                   stroke="rgba(255,255,255,0.2)"
                 >
                   {getOverviewChartData().map((entry, index) => (
@@ -394,7 +426,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
           </div>
 
           {/* Floating Mini Stats */}
-          <div className="absolute top-1/2 left-[75%] -translate-y-1/2 space-y-1.5">
+          <div className="absolute top-1/2 left-[70%] sm:left-[75%] -translate-y-1/2 space-y-1 sm:space-y-1.5 hidden sm:block">
             {getOverviewChartData().map((entry, index) => (
               <div
                 key={index}
@@ -452,6 +484,32 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
               <span className="text-purple-200 text-xs font-medium mr-2 relative z-10">TOTAL</span>
               <div className="w-px h-4 bg-white/30 relative z-10"></div>
               <span className="text-white text-lg font-black ml-2 relative z-10 tracking-wider">{overallStats.total}</span>
+            </div>
+          </div>
+
+          {/* Mobile Stats - Below Overview Chart */}
+          <div className="sm:hidden mt-6 space-y-2">
+            {getOverviewChartData().map((entry, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between bg-card/30 backdrop-blur-sm border border-border/30 rounded-lg px-3 py-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: entry.color }}
+                  />
+                  <span className="text-sm font-medium text-foreground">{entry.name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm font-bold text-foreground">{entry.value}</span>
+                  <span className="text-xs text-muted-foreground">({entry.percentage}%)</span>
+                </div>
+              </div>
+            ))}
+            <div className="flex items-center justify-between bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-400/30 rounded-lg px-3 py-2 mt-3">
+              <span className="text-sm font-medium text-purple-200">Total</span>
+              <span className="text-lg font-bold text-white">{overallStats.total}</span>
             </div>
           </div>
         </div>

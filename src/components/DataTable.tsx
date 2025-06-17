@@ -513,41 +513,41 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
   }
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-4 sm:space-y-6 h-full flex flex-col">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 pt-2 sm:pt-0">
         <div>
-          <h2 className="text-3xl font-bold gradient-text">Onboarding Data</h2>
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold gradient-text">Onboarding Data</h2>
           <p className="text-muted-foreground mt-1 text-sm">
             Showing {filteredData.length} of {data.length} students
           </p>
         </div>
-        <div className="flex space-x-2">
+        <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2",
+              "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2",
               showFilters
                 ? "gradient-purple text-white shadow-lg glow-purple"
                 : "bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
             )}
           >
-            <Filter className="w-4 h-4" />
-            <span>Filters</span>
+            <Filter className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Filters</span>
           </button>
           <button
             onClick={() => setShowGuide(true)}
-            className="px-4 py-2 bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2"
+            className="px-3 py-2 sm:px-4 sm:py-2 bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2"
           >
-            <HelpCircle className="w-4 h-4" />
-            <span>Guide</span>
+            <HelpCircle className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Guide</span>
           </button>
           <button
             onClick={() => setShowAddForm(true)}
-            className="px-4 py-2 gradient-green text-white rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-green"
+            className="px-3 py-2 sm:px-4 sm:py-2 gradient-green text-white rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 hover:scale-105 glow-green"
           >
-            <Plus className="w-4 h-4" />
-            <span>Add Row</span>
+            <Plus className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Add</span>
           </button>
           <button
             onClick={() => {
@@ -557,41 +557,41 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               }
             }}
             className={cn(
-              "px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2",
+              "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2",
               showDeleteMode
                 ? "gradient-red text-white glow-red"
                 : "bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
             )}
           >
-            <Trash2 className="w-4 h-4" />
-            <span>Delete Row</span>
+            <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Delete</span>
           </button>
           {showDeleteMode && selectedRows.size > 0 && (
             <button
               onClick={handleDeleteRows}
               disabled={isSaving}
-              className="px-4 py-2 gradient-red text-white rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-red disabled:opacity-50"
+              className="px-3 py-2 sm:px-4 sm:py-2 gradient-red text-white rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 hover:scale-105 glow-red disabled:opacity-50"
             >
-              <Trash2 className="w-4 h-4" />
-              <span>Delete ({selectedRows.size})</span>
+              <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>({selectedRows.size})</span>
             </button>
           )}
           <button
             onClick={exportData}
-            className="px-4 py-2 gradient-blue text-white rounded-lg text-sm font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-blue"
+            className="px-3 py-2 sm:px-4 sm:py-2 gradient-blue text-white rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 hover:scale-105 glow-blue"
           >
-            <Download className="w-4 h-4" />
-            <span>Export</span>
+            <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Export</span>
           </button>
         </div>
       </div>
 
       {/* Add Form Modal */}
       {showAddForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-2xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold gradient-text">Add New Student</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-8 max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold gradient-text">Add New Student</h3>
               <button
                 onClick={() => setShowAddForm(false)}
                 className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
@@ -600,7 +600,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2">Enrollment ID</label>
                 <input
@@ -786,17 +786,17 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               </div>
             </div>
 
-            <div className="flex justify-end space-x-4 mt-8">
+            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4 mt-6 sm:mt-8">
               <button
                 onClick={() => setShowAddForm(false)}
-                className="px-6 py-3 bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground rounded-xl font-medium transition-all duration-300"
+                className="px-4 py-2 sm:px-6 sm:py-3 bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground rounded-xl font-medium transition-all duration-300 text-sm sm:text-base"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddRow}
                 disabled={isSaving}
-                className="px-6 py-3 gradient-green text-white rounded-xl font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-green disabled:opacity-50"
+                className="px-4 py-2 sm:px-6 sm:py-3 gradient-green text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center space-x-2 hover:scale-105 glow-green disabled:opacity-50 text-sm sm:text-base"
               >
                 {isSaving ? (
                   <>
@@ -817,10 +817,10 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
 
       {/* Guide Modal */}
       {showGuide && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-2xl p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold gradient-text">Admin Panel Guide</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-8 max-w-3xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <h3 className="text-xl sm:text-2xl font-bold gradient-text">Admin Panel Guide</h3>
               <button
                 onClick={() => setShowGuide(false)}
                 className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
@@ -891,10 +891,10 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               </div>
             </div>
 
-            <div className="flex justify-end mt-8">
+            <div className="flex justify-end mt-6 sm:mt-8">
               <button
                 onClick={() => setShowGuide(false)}
-                className="px-6 py-3 gradient-purple text-white rounded-xl font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-purple"
+                className="px-4 py-2 sm:px-6 sm:py-3 gradient-purple text-white rounded-xl font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-purple text-sm sm:text-base"
               >
                 <span>Got it!</span>
               </button>
@@ -905,9 +905,9 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
 
       {/* Filters */}
       {showFilters && (
-        <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl p-6 space-y-4">
+        <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4">
           <h3 className="text-lg font-semibold gradient-text">Filters</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Cohort Type
@@ -955,56 +955,56 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
       )}
 
       {/* Table Container - Full height with scrollbar at bottom */}
-      <div className="flex-1 bg-card/50 backdrop-blur-xl border border-border/50 rounded-2xl overflow-hidden">
+      <div className="flex-1 bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl overflow-hidden">
         <div className="h-full overflow-auto">
-          <table className="w-full min-w-max">
+          <table className="w-full min-w-max table-auto">
             <thead className="bg-muted/30 backdrop-blur-sm sticky top-0 z-10">
               <tr>
                 {showDeleteMode && (
-                  <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap w-12">
+                  <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap w-8 sm:w-12">
                     <input
                       type="checkbox"
                       checked={selectedRows.size === filteredData.length && filteredData.length > 0}
                       onChange={(e) => handleSelectAll(e.target.checked)}
-                      className="w-4 h-4 text-primary bg-transparent border-border rounded focus:ring-primary focus:ring-2"
+                      className="w-3 h-3 sm:w-4 sm:h-4 text-primary bg-transparent border-border rounded focus:ring-primary focus:ring-2"
                     />
                   </th>
                 )}
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Enrollment ID</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Cohort Type</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Cohort Number</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Full Name</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Email</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Phone</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">LinkedIn</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">GitHub</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Hackerrank</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">College</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">State</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Year</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Branch</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Grad Year</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Understanding</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Skills</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Projects</th>
-                <th className="px-4 py-4 text-left text-sm font-semibold text-foreground whitespace-nowrap">Goal</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">ID</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Type</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Number</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Name</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Email</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Phone</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">LinkedIn</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">GitHub</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">HackerRank</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">College</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">State</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Year</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Branch</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Grad</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Understanding</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Skills</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Projects</th>
+                <th className="px-2 py-3 sm:px-4 sm:py-4 text-left text-xs sm:text-sm font-semibold text-foreground whitespace-nowrap">Goal</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">
               {filteredData.map((row) => (
                 <tr key={row.EnrollmentID} className="hover:bg-muted/20 transition-all duration-200">
                   {showDeleteMode && (
-                    <td className="px-4 py-4 text-sm whitespace-nowrap w-12">
+                    <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap w-8 sm:w-12">
                       <input
                         type="checkbox"
                         checked={selectedRows.has(row.EnrollmentID)}
                         onChange={(e) => handleRowSelect(row.EnrollmentID, e.target.checked)}
-                        className="w-4 h-4 text-primary bg-transparent border-border rounded focus:ring-primary focus:ring-2"
+                        className="w-3 h-3 sm:w-4 sm:h-4 text-primary bg-transparent border-border rounded focus:ring-primary focus:ring-2"
                       />
                     </td>
                   )}
-                  <td className="px-4 py-4 text-sm text-blue-400 font-mono font-semibold whitespace-nowrap">{row.EnrollmentID}</td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm text-blue-400 font-mono font-semibold whitespace-nowrap">{row.EnrollmentID}</td>
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Cohort Type', row['Cohort Type'])}
@@ -1012,7 +1012,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Cohort Type', row['Cohort Type'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-foreground font-medium min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Cohort Number', row['Cohort Number'])}
@@ -1020,7 +1020,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Cohort Number', row['Cohort Number'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-foreground font-medium min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Full Name', row['Full Name'])}
@@ -1028,7 +1028,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Full Name', row['Full Name'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Email', row.Email)}
@@ -1036,7 +1036,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Email', row.Email)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-muted-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Phone Number', row['Phone Number'])}
@@ -1044,7 +1044,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Phone Number', row['Phone Number'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'LinkedIn', row.LinkedIn)}
@@ -1052,7 +1052,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'LinkedIn', row.LinkedIn)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'GitHub', row.GitHub)}
@@ -1060,7 +1060,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'GitHub', row.GitHub)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-muted-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Hackerrank', row.Hackerrank)}
@@ -1068,7 +1068,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Hackerrank', row.Hackerrank)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'College', row.College)}
@@ -1076,7 +1076,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'College', row.College)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-muted-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'College State', row['College State'])}
@@ -1084,7 +1084,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'College State', row['College State'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-muted-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'College Year', row['College Year'])}
@@ -1092,7 +1092,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'College Year', row['College Year'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-muted-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Branch', row.Branch)}
@@ -1100,7 +1100,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Branch', row.Branch)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm whitespace-nowrap">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm whitespace-nowrap">
                     <div
                       className="editable-cell text-foreground min-h-[20px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Graduation Year', row['Graduation Year'])}
@@ -1108,33 +1108,33 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                       {renderCell(row, 'Graduation Year', row['Graduation Year'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm">
                     <div
-                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[200px] relative"
+                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[150px] sm:max-w-[200px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Understanding', row.Understanding)}
                     >
                       {renderCell(row, 'Understanding', row.Understanding)}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm">
                     <div
-                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[200px] relative"
+                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[150px] sm:max-w-[200px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Familiar Skills', row['Familiar Skills'])}
                     >
                       {renderCell(row, 'Familiar Skills', row['Familiar Skills'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm">
                     <div
-                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[200px] relative"
+                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[150px] sm:max-w-[200px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Built Projects', row['Built Projects'])}
                     >
                       {renderCell(row, 'Built Projects', row['Built Projects'])}
                     </div>
                   </td>
-                  <td className="px-4 py-4 text-sm">
+                  <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm">
                     <div
-                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[200px] relative"
+                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[150px] sm:max-w-[200px] relative"
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Goal', row.Goal)}
                     >
                       {renderCell(row, 'Goal', row.Goal)}
