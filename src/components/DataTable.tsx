@@ -85,7 +85,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
     if (data.length > 0) {
       debugDatabaseStructure()
     }
-  }, [data])
+  }, [data, debugDatabaseStructure])
 
   // Custom sorting function for enrollment IDs
   const sortByEnrollmentId = (a: OnboardingData, b: OnboardingData) => {

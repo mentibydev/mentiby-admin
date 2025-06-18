@@ -180,7 +180,7 @@ export default function LoginForm({ onSuccess, forcedLogout = false }: LoginForm
           {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-gray-500 text-sm">
-              Don't have access?{' '}
+              Don&apos;t have access?{' '}
               <span className="text-purple-400">Contact your administrator</span>
             </p>
           </div>

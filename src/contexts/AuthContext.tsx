@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       subscription.unsubscribe()
       stopAuthVerification()
     }
-  }, [mounted])
+  }, [mounted, startAuthVerification])
 
   // Also verify on window focus (when user returns to tab) - client-side only
   useEffect(() => {
