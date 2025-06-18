@@ -6,9 +6,10 @@ import { OnboardingData } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import DataTable from '@/components/DataTable'
 import CohortCharts from '@/components/CohortCharts'
+import AuthWrapper from '@/components/auth/AuthWrapper'
 import { Menu, X } from 'lucide-react'
 
-export default function AdminPanel() {
+function AdminPanel() {
   const [activeTab, setActiveTab] = useState<'table' | 'charts'>('table')
   const [data, setData] = useState<OnboardingData[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -123,5 +124,13 @@ export default function AdminPanel() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Page() {
+  return (
+    <AuthWrapper>
+      <AdminPanel />
+    </AuthWrapper>
   )
 } 

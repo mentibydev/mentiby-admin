@@ -1,12 +1,13 @@
 import './globals.css'
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
+import { AuthProvider } from '@/contexts/AuthContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'MentiBy Admin Panel',
-  description: 'Admin panel for managing onboarding data and cohort analytics',
+  description: 'Secure admin panel for managing onboarding data and cohort analytics',
 }
 
 export const viewport: Viewport = {
@@ -23,7 +24,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   )

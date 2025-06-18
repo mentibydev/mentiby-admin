@@ -1,7 +1,9 @@
 'use client'
 
-import { Database, PieChart, Users } from 'lucide-react'
+import { Database, PieChart, Users, LogOut, User, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
+import { useState, useEffect } from 'react'
 
 interface SidebarProps {
   activeTab: 'table' | 'charts'
@@ -9,6 +11,36 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+  const { user, signOut } = useAuth()
+  const [showUserMenu, setShowUserMenu] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  // Ensure we're on the client side
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleSignOut = async () => {
+    setIsLoggingOut(true)
+    try {
+      await signOut()
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+    setIsLoggingOut(false)
+  }
+
+  // Get display name from user metadata or fall back to email (only after mounted)
+  const displayName = mounted && user 
+    ? (user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin')
+    : 'Admin'
+
+  // Only calculate last login date on client side to prevent hydration issues
+  const lastLoginDate = mounted && user?.last_sign_in_at 
+    ? new Date(user.last_sign_in_at).toLocaleDateString()
+    : 'Never'
+
   const menuItems = [
     {
       id: 'table' as const,
@@ -92,9 +124,69 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Footer */}
+      {/* User Info & Logout */}
       <div className="p-3 sm:p-4 border-t border-border/50">
-        <div className="text-xs text-muted-foreground text-center">
+        <div className="relative">
+          {/* User Profile Button */}
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full p-3 sm:p-4 bg-muted/30 hover:bg-muted/50 rounded-xl sm:rounded-2xl transition-all duration-300 group"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center glow-purple">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-semibold text-sm sm:text-base text-foreground truncate">
+                  {displayName}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Administrator
+                </div>
+              </div>
+              <ChevronUp className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${showUserMenu ? 'rotate-180' : ''}`} />
+            </div>
+          </button>
+
+          {/* User Menu Dropdown */}
+          {showUserMenu && (
+            <div className="absolute bottom-full left-0 right-0 mb-2 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50">
+              {/* User Info */}
+              <div className="p-3 sm:p-4 border-b border-border/50">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {mounted ? user?.email : '...'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Last login: {lastLoginDate}
+                </p>
+              </div>
+
+              {/* Logout Button */}
+              <div className="p-2">
+                <button
+                  onClick={handleSignOut}
+                  disabled={isLoggingOut}
+                  className="w-full p-2 sm:p-3 text-left text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors flex items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
+                      Signing Out...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-4 text-xs text-muted-foreground text-center">
           © 2025 MentiBY Admin
         </div>
         <div className="flex items-center justify-center space-x-1 text-xs mt-2">
@@ -104,6 +196,14 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           <span className="text-sm" style={{lineHeight: 1}}>❤️</span>
         </div>
       </div>
+
+      {/* Click outside to close menu */}
+      {showUserMenu && (
+        <div 
+          className="fixed inset-0 z-40" 
+          onClick={() => setShowUserMenu(false)}
+        />
+      )}
     </div>
   )
 } 
