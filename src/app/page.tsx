@@ -6,11 +6,13 @@ import { OnboardingData } from '@/types'
 import Sidebar from '@/components/Sidebar'
 import DataTable from '@/components/DataTable'
 import CohortCharts from '@/components/CohortCharts'
+import AttendanceUpload from '@/components/AttendanceUpload'
+import XPLeaderboard from '@/components/XPLeaderboard'
 import AuthWrapper from '@/components/auth/AuthWrapper'
 import { Menu, X } from 'lucide-react'
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'table' | 'charts'>('table')
+  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'attendance' | 'xp'>('table')
   const [data, setData] = useState<OnboardingData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +45,7 @@ function AdminPanel() {
     }
   }
 
-  const handleTabChange = (tab: 'table' | 'charts') => {
+  const handleTabChange = (tab: 'table' | 'charts' | 'attendance' | 'xp') => {
     setActiveTab(tab)
     setIsMobileMenuOpen(false) // Close mobile menu when tab changes
   }
@@ -76,6 +78,10 @@ function AdminPanel() {
         return <DataTable data={data} isLoading={isLoading} onDataUpdate={fetchData} />
       case 'charts':
         return <CohortCharts data={data} isLoading={isLoading} />
+      case 'xp':
+        return <XPLeaderboard />
+      case 'attendance':
+        return <AttendanceUpload />
       default:
         return <DataTable data={data} isLoading={isLoading} onDataUpdate={fetchData} />
     }

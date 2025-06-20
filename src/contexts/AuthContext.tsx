@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState, useRef } from 'react'
+import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { authService } from '@/lib/auth'
 
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Auto-verify authentication every 2 seconds (client-side only)
-  const startAuthVerification = () => {
+  const startAuthVerification = useCallback(() => {
     // Only run on client side
     if (typeof window === 'undefined' || !mounted) return
     
@@ -41,13 +41,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Only verify if we think we have a user
         if (user && session) {
-          console.log('🔍 Auto-verifying auth status...')
           
           // Use the robust verification method
           const { isValid, user: freshUser, session: freshSession } = await authService.verifyUserExists()
           
           if (!isValid || !freshSession || !freshUser) {
-            console.log('❌ Auth verification failed - user may have been deleted - forcing logout')
             // User no longer exists or session is invalid - force logout
             setUser(null)
             setSession(null)
@@ -56,29 +54,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Clear any local storage or session data
             await authService.signOut()
           } else {
-            console.log('✅ Auth verification successful')
             // Update with fresh data
             setUser(freshUser)
             setSession(freshSession)
           }
         }
       } catch (error) {
-        console.error('Auth verification error:', error)
         // On verification error, assume user is invalid and force logout
-        console.log('❌ Auth verification error - forcing logout')
         setUser(null)
         setSession(null)
         setLoading(false)
         await authService.signOut()
       }
-    }, 2000) // Every 2 seconds
-  }
+    }, 30000) // Every 30 seconds instead of 2 seconds
+  }, [mounted, user, session])
 
   const stopAuthVerification = () => {
     if (verificationIntervalRef.current) {
       clearInterval(verificationIntervalRef.current)
       verificationIntervalRef.current = null
-      console.log('🛑 Stopped auth verification')
     }
   }
 
@@ -94,24 +88,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       // Start verification if user is authenticated
       if (user && session) {
-        console.log('🚀 Starting auth verification for user:', user.email)
         startAuthVerification()
       }
     })
 
     // Listen for auth changes
     const { data: { subscription } } = authService.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.email)
       setSession(session)
       setUser(session?.user || null)
       setLoading(false)
       
       // Start/stop verification based on auth status
       if (session?.user) {
-        console.log('🚀 Auth change - starting verification for user:', session.user.email)
         startAuthVerification()
       } else {
-        console.log('🛑 Auth change - stopping verification (no user)')
         stopAuthVerification()
       }
     })
@@ -130,22 +120,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const handleFocus = async () => {
       if (user && session) {
-        console.log('🔍 Window focus - verifying auth...')
         try {
           const { isValid, user: freshUser, session: freshSession } = await authService.verifyUserExists()
           
           if (!isValid || !freshSession || !freshUser) {
-            console.log('❌ Focus verification failed - user may have been deleted - forcing logout')
             setUser(null)
             setSession(null)
             await authService.signOut()
           } else {
-            console.log('✅ Focus verification successful')
             setUser(freshUser)
             setSession(freshSession)
           }
         } catch (error) {
-          console.error('Focus verification error:', error)
           setUser(null)
           setSession(null)
           await authService.signOut()
@@ -166,7 +152,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     setLoading(true)
-    console.log('🚪 User signing out - stopping verification')
     stopAuthVerification() // Stop verification when signing out
     const result = await authService.signOut()
     setLoading(false)

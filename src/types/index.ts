@@ -28,4 +28,38 @@ export interface CohortDistribution {
 export interface FilterOptions {
   cohortType: string;
   cohortNumber: string;
+}
+
+// New XP related interfaces
+export interface XPData {
+  id?: string;
+  enrollment_id: string;
+  email: string;
+  full_name: string;
+  cohort_type: string;
+  cohort_number: string;
+  xp: number;
+  last_updated: string;
+  created_at?: string;
+}
+
+export interface CodedamnXPResponse {
+  output: {
+    status: 'ok' | 'error';
+    data?: {
+      cumulativeXpAllTime: number;
+    };
+    errorMessage?: string;
+  };
+}
+
+export interface LeaderboardEntry {
+  rank: number;
+  enrollment_id: string;
+  full_name: string;
+  email: string;
+  cohort_type: string;
+  cohort_number: string;
+  xp: number;
+  last_updated: string;
 } 

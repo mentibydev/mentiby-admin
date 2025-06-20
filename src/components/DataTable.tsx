@@ -37,55 +37,55 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
 
   const cohortTypes = ['Basic', 'Placement', 'MERN', 'Full Stack']
 
-  // Debug function to check database structure
-  const debugDatabaseStructure = async () => {
-    try {
-      console.log('=== DATABASE DEBUG INFO ===')
-
-      // Get the last record based on EnrollmentID (highest year then highest number)
-      const { data: sampleData, error: sampleError } = await supabase
-        .from('onboarding')
-        .select('*')
-        .order('EnrollmentID', { ascending: false })
-        .limit(1)
-
-      if (sampleError) {
-        console.error('Error fetching sample data:', sampleError)
-        return
-      }
-
-      if (sampleData && sampleData.length > 0) {
-        console.log('Latest record from database (by EnrollmentID):', sampleData[0])
-        console.log('Available columns:', Object.keys(sampleData[0]))
-      }
-
-      // Test if we can find a specific record
-      if (data.length > 0) {
-        const testId = data[0].EnrollmentID
-        console.log('Testing lookup for EnrollmentID:', testId)
-
-        const { data: testData, error: testError } = await supabase
-          .from('onboarding')
-          .select('*')
-          .eq('EnrollmentID', testId)
-
-        if (testError) {
-          console.error('Error in test lookup:', testError)
-        } else {
-          console.log('Test lookup result:', testData)
-        }
-      }
-    } catch (error) {
-      console.error('Debug function error:', error)
-    }
-  }
-
   // Run debug on component mount
   useEffect(() => {
     if (data.length > 0) {
+      // Debug function to check database structure (moved inside useEffect)
+      const debugDatabaseStructure = async () => {
+        try {
+          console.log('=== DATABASE DEBUG INFO ===')
+
+          // Get the last record based on EnrollmentID (highest year then highest number)
+          const { data: sampleData, error: sampleError } = await supabase
+            .from('onboarding')
+            .select('*')
+            .order('EnrollmentID', { ascending: false })
+            .limit(1)
+
+          if (sampleError) {
+            console.error('Error fetching sample data:', sampleError)
+            return
+          }
+
+          if (sampleData && sampleData.length > 0) {
+            console.log('Latest record from database (by EnrollmentID):', sampleData[0])
+            console.log('Available columns:', Object.keys(sampleData[0]))
+          }
+
+          // Test if we can find a specific record
+          if (data.length > 0) {
+            const testId = data[0].EnrollmentID
+            console.log('Testing lookup for EnrollmentID:', testId)
+
+            const { data: testData, error: testError } = await supabase
+              .from('onboarding')
+              .select('*')
+              .eq('EnrollmentID', testId)
+
+            if (testError) {
+              console.error('Error in test lookup:', testError)
+            } else {
+              console.log('Test lookup result:', testData)
+            }
+          }
+        } catch (error) {
+          console.error('Debug function error:', error)
+        }
+      }
+
       debugDatabaseStructure()
     }
-  }, [data, debugDatabaseStructure])
+  }, [data])
 
   // Custom sorting function for enrollment IDs
   const sortByEnrollmentId = (a: OnboardingData, b: OnboardingData) => {

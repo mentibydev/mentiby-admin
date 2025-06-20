@@ -84,6 +84,18 @@
   background: linear-gradient(135deg, #f59e0b, #d97706);
 }
 
+.gradient-gold {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+}
+
+.gradient-silver {
+  background: linear-gradient(135deg, #e5e7eb, #9ca3af, #6b7280);
+}
+
+.gradient-bronze {
+  background: linear-gradient(135deg, #f59e0b, #d97706, #92400e);
+}
+
 /* Glow effects */
 .glow-purple {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
@@ -99,6 +111,18 @@
 
 .glow-red {
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.glow-gold {
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.4);
+}
+
+.glow-silver {
+  box-shadow: 0 0 30px rgba(156, 163, 175, 0.4);
+}
+
+.glow-bronze {
+  box-shadow: 0 0 30px rgba(217, 119, 6, 0.4);
 }
 
 /* Editable cell styles */

@@ -2,3 +2,41 @@ node_modules
 .next
 .cursorignore
 .env.local
+
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+
+# Attendance processing
+temp/
+*.log
+
+# Editor
+.vscode/
+*.swp
+*.swo
+
+
+attendance_db_setup.sql
+ATTENDANCE_SYSTEM_FINAL.md
+AUTH_SETUP_GUIDE.md
+AUTH_SETUP_GUIDE.md
+Cohort 2(05-05-2025).xlsx - Meeting_with_GORTHI_NIKHITHA-_A.csv
+QUICK_SETUP_GUIDE.md
+student_xp_schema.sql

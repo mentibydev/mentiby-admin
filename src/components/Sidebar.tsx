@@ -1,13 +1,13 @@
 'use client'
 
-import { Database, PieChart, Users, LogOut, User, ChevronUp } from 'lucide-react'
+import { Database, PieChart, Users, LogOut, User, ChevronUp, Upload, Trophy } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 
 interface SidebarProps {
-  activeTab: 'table' | 'charts'
-  onTabChange: (tab: 'table' | 'charts') => void
+  activeTab: 'table' | 'charts' | 'attendance' | 'xp'
+  onTabChange: (tab: 'table' | 'charts' | 'attendance' | 'xp') => void
 }
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -31,7 +31,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     setIsLoggingOut(false)
   }
 
-  // Get display name from user metadata or fall back to email (only after mounted)
+  // Get display name from user metadata or fall back to email (prevent hydration mismatch)
   const displayName = mounted && user 
     ? (user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin')
     : 'Admin'
@@ -55,6 +55,20 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       icon: PieChart,
       description: 'Analytics and charts',
       gradient: 'gradient-purple'
+    },
+    {
+      id: 'xp' as const,
+      label: 'XP Leaderboard',
+      icon: Trophy,
+      description: 'Student XP rankings',
+      gradient: 'gradient-gold'
+    },
+    {
+      id: 'attendance' as const,
+      label: 'Attendance Upload',
+      icon: Upload,
+      description: 'Upload attendance CSV files',
+      gradient: 'gradient-green'
     }
   ]
 
@@ -137,7 +151,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
                 <User className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div className="flex-1 text-left min-w-0">
-                <div className="font-semibold text-sm sm:text-base text-foreground truncate">
+                <div className="font-semibold text-sm sm:text-base text-foreground truncate" suppressHydrationWarning>
                   {displayName}
                 </div>
                 <div className="text-xs text-muted-foreground">
@@ -149,15 +163,15 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </button>
 
           {/* User Menu Dropdown */}
-          {showUserMenu && (
+          {showUserMenu && mounted && (
             <div className="absolute bottom-full left-0 right-0 mb-2 bg-card/80 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl z-50">
               {/* User Info */}
               <div className="p-3 sm:p-4 border-b border-border/50">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {mounted ? user?.email : '...'}
+                <p className="text-sm font-medium text-foreground truncate" suppressHydrationWarning>
+                  {mounted && user?.email ? user.email : 'Loading...'}
                 </p>
-                <p className="text-xs text-muted-foreground">
-                  Last login: {lastLoginDate}
+                <p className="text-xs text-muted-foreground" suppressHydrationWarning>
+                  Last login: {mounted ? lastLoginDate : 'Loading...'}
                 </p>
               </div>
 
