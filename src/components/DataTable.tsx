@@ -34,6 +34,11 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
   const [showGuide, setShowGuide] = useState(false)
   const [showDeleteMode, setShowDeleteMode] = useState(false)
   const [newRowData, setNewRowData] = useState<Partial<OnboardingData>>({})
+  const [goalPopup, setGoalPopup] = useState<{ isOpen: boolean; content: string; studentName: string }>({
+    isOpen: false,
+    content: '',
+    studentName: ''
+  })
 
   const cohortTypes = ['Basic', 'Placement', 'MERN', 'Full Stack']
 
@@ -275,6 +280,22 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
     setEditingCell(null)
   }
 
+  const handleGoalClick = (content: string, studentName: string) => {
+    setGoalPopup({
+      isOpen: true,
+      content: content || 'No goal specified',
+      studentName: studentName
+    })
+  }
+
+  const closeGoalPopup = () => {
+    setGoalPopup({
+      isOpen: false,
+      content: '',
+      studentName: ''
+    })
+  }
+
   // Generate next enrollment ID
   const generateNextEnrollmentId = () => {
     if (data.length === 0) return '25MBY3001'
@@ -474,7 +495,8 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
     }
 
     if (field === 'LinkedIn' || field === 'GitHub' || field === 'Hackerrank') {
-      return value ? (
+      const isValidUrl = value && value !== '-' && value.trim() !== '' && !value.includes('undefined')
+      return isValidUrl ? (
         <a
           href={value.startsWith('http') ? value : `https://${value}`}
           target="_blank"
@@ -489,7 +511,8 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
     }
 
     if (field === 'Email') {
-      return value ? (
+      const isValidEmail = value && value !== '-' && value.trim() !== '' && value.includes('@') && !value.includes('undefined')
+      return isValidEmail ? (
         <a
           href={`mailto:${value}`}
           className="text-blue-400 hover:text-blue-300 underline"
@@ -850,6 +873,16 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
               </div>
 
               <div>
+                <h4 className="text-lg font-semibold text-purple-400 mb-3">🎯 Goal Field Special Feature</h4>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• <strong className="text-foreground">View Full Goal:</strong> Single-click any Goal cell to view complete content in a popup</li>
+                  <li>• <strong className="text-foreground">Edit from Popup:</strong> Click &ldquo;Edit Goal&rdquo; button in the popup to start editing</li>
+                  <li>• <strong className="text-foreground">Direct Edit:</strong> Double-click Goal cell to edit directly (same as other fields)</li>
+                  <li>• <strong className="text-foreground">No Scrolling Issues:</strong> Popup shows full text with proper formatting</li>
+                </ul>
+              </div>
+
+              <div>
                 <h4 className="text-lg font-semibold text-green-400 mb-3">➕ Adding New Records</h4>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• <strong className="text-foreground">Add Student:</strong> Click &ldquo;Add Row&rdquo; button to open the form</li>
@@ -885,7 +918,7 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   <li>• <strong className="text-foreground">Enrollment IDs:</strong> Automatically sorted by year and number (e.g., 25MBY3001)</li>
                   <li>• <strong className="text-foreground">Responsive Design:</strong> Table scrolls horizontally on smaller screens</li>
-                  <li>• <strong className="text-foreground">Data Validation:</strong> Links (LinkedIn, GitHub) and emails are clickable when valid</li>
+                  <li>• <strong className="text-foreground">Smart Links:</strong> Only valid URLs and emails become clickable</li>
                   <li>• <strong className="text-foreground">Real-time Updates:</strong> All changes are immediately reflected in the database</li>
                 </ul>
               </div>
@@ -897,6 +930,54 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                 className="px-4 py-2 sm:px-6 sm:py-3 gradient-purple text-white rounded-xl font-medium transition-all duration-300 flex items-center space-x-2 hover:scale-105 glow-purple text-sm sm:text-base"
               >
                 <span>Got it!</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Goal Popup Modal */}
+      {goalPopup.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-card/90 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4 sm:mb-6">
+              <div>
+                <h3 className="text-xl sm:text-2xl font-bold gradient-text">Student Goal</h3>
+                <p className="text-sm text-muted-foreground mt-1">{goalPopup.studentName}</p>
+              </div>
+              <button
+                onClick={closeGoalPopup}
+                className="p-2 hover:bg-muted/50 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="bg-muted/20 rounded-lg p-4 sm:p-6">
+              <div className="text-foreground whitespace-pre-wrap leading-relaxed">
+                {goalPopup.content}
+              </div>
+            </div>
+
+            <div className="flex justify-end mt-4 sm:mt-6 gap-3">
+              <button
+                onClick={closeGoalPopup}
+                className="px-4 py-2 sm:px-6 sm:py-3 bg-muted/50 hover:bg-muted/70 text-foreground rounded-xl font-medium transition-all duration-300 text-sm sm:text-base"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  closeGoalPopup()
+                  // Find the row and trigger edit mode for Goal
+                  const targetRow = filteredData.find(r => r['Full Name'] === goalPopup.studentName)
+                  if (targetRow) {
+                    handleCellDoubleClick(targetRow.EnrollmentID, 'Goal', targetRow.Goal)
+                  }
+                }}
+                className="px-4 py-2 sm:px-6 sm:py-3 gradient-purple text-white rounded-xl font-medium transition-all duration-300 hover:scale-105 glow-purple text-sm sm:text-base"
+              >
+                Edit Goal
               </button>
             </div>
           </div>
@@ -1134,8 +1215,10 @@ export default function DataTable({ data, isLoading, onDataUpdate }: DataTablePr
                   </td>
                   <td className="px-2 py-3 sm:px-4 sm:py-4 text-xs sm:text-sm">
                     <div
-                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[150px] sm:max-w-[200px] relative"
+                      className="editable-cell text-muted-foreground min-h-[20px] max-w-[200px] sm:max-w-[300px] relative cursor-pointer hover:bg-muted/30 rounded transition-colors"
+                      onClick={() => handleGoalClick(row.Goal, row['Full Name'])}
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, 'Goal', row.Goal)}
+                      title="Click to view full goal, double-click to edit"
                     >
                       {renderCell(row, 'Goal', row.Goal)}
                     </div>
