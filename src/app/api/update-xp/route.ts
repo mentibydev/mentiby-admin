@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { CodedamnXPResponse } from '@/types'
 
+// Set maximum duration for this function (5 minutes)
+export const maxDuration = 300; // 300 seconds = 5 minutes
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -10,7 +13,7 @@ const supabase = createClient(
 // Rate limiting state
 let lastFetchTime = 0
 const RATE_LIMIT_DELAY = 5 * 60 * 1000 // 5 minutes in milliseconds
-const REQUEST_DELAY = 1000 // 1 second delay between API calls to avoid rate limiting
+const REQUEST_DELAY = 500 // Reduced to 0.5 seconds to speed up processing
 
 export async function GET(request: NextRequest) {
   try {
@@ -47,12 +50,17 @@ export async function GET(request: NextRequest) {
       errors: [] as string[]
     }
 
+    const startTime = Date.now()
+    
     // Process users with rate limiting
     for (let i = 0; i < users.length; i++) {
       const user = users[i]
       
       try {
-        console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
+        // Log progress every 10 users and first/last user
+        if (i % 10 === 0 || i === users.length - 1) {
+          console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
+        }
 
         // Fetch XP from Codedamn API
         const xpResponse = await fetch('https://backend.codedamn.com/api/public/get-user-xp', {
@@ -138,13 +146,16 @@ export async function GET(request: NextRequest) {
 
     // Update last fetch time
     lastFetchTime = Date.now()
+    
+    const executionTime = (lastFetchTime - startTime) / 1000 // Convert to seconds
 
-    console.log('XP update process completed:', results)
+    console.log(`XP update process completed in ${executionTime}s:`, results)
 
     return NextResponse.json({
       success: true,
       message: 'XP update completed',
       results,
+      executionTimeSeconds: executionTime,
       timestamp: new Date().toISOString()
     })
 
