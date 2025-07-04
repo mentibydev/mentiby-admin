@@ -13,19 +13,22 @@ const supabase = createClient(
 // Rate limiting state
 let lastFetchTime = 0
 const RATE_LIMIT_DELAY = 5 * 60 * 1000 // 5 minutes in milliseconds
-const REQUEST_DELAY = 500 // Reduced to 0.5 seconds to speed up processing
+const REQUEST_DELAY = 1500 // 1.5 seconds to avoid Codedamn API rate limits
 
 export async function GET(request: NextRequest) {
   try {
-    // Check for secret if provided
+    // Check authentication: either secret or Vercel cron
     const { searchParams } = new URL(request.url)
     const secret = searchParams.get('secret')
+    const userAgent = request.headers.get('user-agent') || ''
+    const isVercelCron = userAgent.includes('vercel-cron')
     
-    if (secret && secret !== process.env.CRON_SECRET) {
+    // Allow if it's a Vercel cron request OR if secret matches
+    if (!isVercelCron && secret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('Starting XP update process...')
+    console.log(isVercelCron ? 'Starting XP update (Vercel Cron)...' : 'Starting XP update (Manual)...')
 
     // Fetch all users from onboarding table
     const { data: users, error: usersError } = await supabase
