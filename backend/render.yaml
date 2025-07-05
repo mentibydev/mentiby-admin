@@ -2,8 +2,9 @@ services:
   - type: web
     name: mentiby-attendance-backend
     runtime: python3
+    rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
       - key: FLASK_DEBUG
         value: false
