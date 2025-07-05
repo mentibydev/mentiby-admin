@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Environment variables:', {
+      BACKEND_URL: process.env.BACKEND_URL,
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV
+    })
+    
     const formData = await request.formData()
     
     const file = formData.get('csv_file') as File
@@ -40,6 +46,9 @@ export async function POST(request: NextRequest) {
       // Get backend URL from environment variable
       const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000'
       
+      console.log('Backend URL:', backendUrl)
+      console.log('Processing file:', file.name)
+      
       // Create FormData for the backend request
       const backendFormData = new FormData()
       backendFormData.append('csv_file', file)
@@ -49,23 +58,50 @@ export async function POST(request: NextRequest) {
       backendFormData.append('class_date', date)
       backendFormData.append('teacher_name', teacherName)
 
+      console.log('Calling backend with params:', {
+        cohortType, cohortNumber, subject, date, teacherName
+      })
+
       // Call the Flask backend
       const response = await fetch(`${backendUrl}/process-attendance`, {
         method: 'POST',
         body: backendFormData,
       })
 
-      const result = await response.json()
-
+      console.log('Backend response status:', response.status)
+      console.log('Backend response headers:', Object.fromEntries(response.headers.entries()))
+      
+      // Check if response is ok before trying to parse JSON
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Backend error response:', errorText)
         return NextResponse.json(
           { 
-            error: result.error || 'Backend processing failed',
-            details: result.details || 'Unknown error from backend'
+            error: 'Backend processing failed',
+            details: errorText || `HTTP ${response.status}`
           },
           { status: response.status }
         )
       }
+
+      const responseText = await response.text()
+      console.log('Backend response text:', responseText)
+      
+      let result
+      try {
+        result = JSON.parse(responseText)
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError)
+        return NextResponse.json(
+          { 
+            error: 'Invalid JSON response from backend',
+            details: `Response: ${responseText.substring(0, 200)}...`
+          },
+          { status: 500 }
+        )
+      }
+
+      console.log('Backend response parsed successfully:', result)
 
       // Return success result
       return NextResponse.json(result)
