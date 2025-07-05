@@ -47,15 +47,8 @@ export async function POST(request: NextRequest) {
       // Generate a unique filename
       const timestamp = Date.now()
       const tempFileName = `attendance_${timestamp}.csv`
-      const tempFilePath = join(process.cwd(), 'temp', tempFileName)
-      
-      // Ensure temp directory exists
-      const { mkdir } = await import('fs/promises')
-      try {
-        await mkdir(join(process.cwd(), 'temp'), { recursive: true })
-      } catch (e) {
-        // Directory might already exist
-      }
+      // Use /tmp directory which is writable in Vercel serverless environment
+      const tempFilePath = join('/tmp', tempFileName)
       
       // Write the file
       await writeFile(tempFilePath, buffer)
