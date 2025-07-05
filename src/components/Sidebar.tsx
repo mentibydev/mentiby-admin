@@ -6,8 +6,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 
 interface SidebarProps {
-  activeTab: 'table' | 'charts' | 'attendance' | 'xp'
-  onTabChange: (tab: 'table' | 'charts' | 'attendance' | 'xp') => void
+  activeTab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp'
+  onTabChange: (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp') => void
 }
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -50,6 +50,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       gradient: 'gradient-blue'
     },
     {
+      id: 'feedback' as const,
+      label: 'Mentiby Feedback',
+      icon: Trophy,
+      description: 'Students Feedback on Mentiby',
+      gradient: 'gradient-gold'
+    },
+    {
       id: 'charts' as const,
       label: 'Cohort Graphs',
       icon: PieChart,
@@ -63,6 +70,7 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       description: 'Student XP rankings',
       gradient: 'gradient-gold'
     },
+    
     {
       id: 'attendance' as const,
       label: 'Attendance Upload',

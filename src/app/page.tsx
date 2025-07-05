@@ -10,16 +10,29 @@ import AttendanceUpload from '@/components/AttendanceUpload'
 import XPLeaderboard from '@/components/XPLeaderboard'
 import AuthWrapper from '@/components/auth/AuthWrapper'
 import { Menu, X } from 'lucide-react'
+import FeedbackTable from '@/components/FeedbackTable'
+
+// Temporary local type definition for FeedbackData
+type FeedbackData = {
+  EnrollmentID: string
+  Mentor1Feedback: string
+  Mentor2Feedback: string
+  OverallFeedback: string
+  ChallengesFaced: string
+  SuggestionsToImprove: string
+}
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'attendance' | 'xp'>('table')
-  const [data, setData] = useState<OnboardingData[]>([])
+  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'feedback' | 'attendance' | 'xp'>('table')
+  const [onboardingData, setOnboardingData] = useState<OnboardingData[]>([])
+  const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     fetchData()
+    fetchFeedbackData()
   }, [])
 
   const fetchData = async () => {
@@ -36,16 +49,38 @@ function AdminPanel() {
         throw error
       }
 
-      setData(onboardingData || [])
+      setOnboardingData(onboardingData || [])
     } catch (err) {
-      console.error('Error fetching data:', err)
-      setError(err instanceof Error ? err.message : 'An error occurred while fetching data')
+      console.error('Error fetching onboarding data:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching onboarding data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  const fetchFeedbackData = async () => {
+    try {
+      setIsLoading(true)
+      setError(null)
+      
+      const { data: feedbackData, error } = await supabase
+        .from('mentibyFeedback')
+        .select('*')
+        .order('EnrollmentID', { ascending: true })
+
+      if (error) {
+        throw error
+      }
+
+      setFeedbackData(feedbackData || [])
+    } catch (err) {
+      console.error('Error fetching feedback data:', err)
+      setError(err instanceof Error ? err.message : 'An error occurred while fetching feedback data')
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleTabChange = (tab: 'table' | 'charts' | 'attendance' | 'xp') => {
+  const handleTabChange = (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp') => {
     setActiveTab(tab)
     setIsMobileMenuOpen(false) // Close mobile menu when tab changes
   }
@@ -63,7 +98,13 @@ function AdminPanel() {
             <h3 className="text-xl sm:text-2xl font-semibold gradient-text mb-2 sm:mb-3">Error Loading Data</h3>
             <p className="text-muted-foreground mb-4 sm:mb-6 text-sm sm:text-base">{error}</p>
             <button
-              onClick={fetchData}
+              onClick={() => {
+                if (activeTab === 'feedback') {
+                  fetchFeedbackData()
+                } else {
+                  fetchData()
+                }
+              }}
               className="px-4 py-2 sm:px-6 sm:py-3 gradient-purple text-white rounded-xl hover:scale-105 transition-all duration-300 font-medium glow-purple text-sm sm:text-base"
             >
               Retry Connection
@@ -75,15 +116,17 @@ function AdminPanel() {
 
     switch (activeTab) {
       case 'table':
-        return <DataTable data={data} isLoading={isLoading} onDataUpdate={fetchData} />
+        return <DataTable data={onboardingData} isLoading={isLoading} onDataUpdate={fetchData} />
+      case 'feedback':
+        return <FeedbackTable data={feedbackData} isLoading={isLoading} onDataUpdate={fetchFeedbackData} />
       case 'charts':
-        return <CohortCharts data={data} isLoading={isLoading} />
+        return <CohortCharts data={onboardingData} isLoading={isLoading} />
       case 'xp':
         return <XPLeaderboard />
       case 'attendance':
         return <AttendanceUpload />
       default:
-        return <DataTable data={data} isLoading={isLoading} onDataUpdate={fetchData} />
+        return <DataTable data={onboardingData} isLoading={isLoading} onDataUpdate={fetchData} />
     }
   }
 
@@ -139,4 +182,4 @@ export default function Page() {
       <AdminPanel />
     </AuthWrapper>
   )
-} 
+}
