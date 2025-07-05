@@ -45,5 +45,5 @@ python app.py
 
 Update your frontend's environment variables:
 ```bash
-BACKEND_URL=https://your-backend-service.onrender.com
+BACKEND_URL=https://mentiby-admin.onrender.com
 ``` 
