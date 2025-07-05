@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "src/app/api/attendance/upload/route.ts": {
-      "maxDuration": 300
-    }
-  },
   "crons": [
     {
       "path": "/api/update-xp",

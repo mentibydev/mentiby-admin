@@ -1,7 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile, unlink } from 'fs/promises'
-import { join } from 'path'
-import { spawn } from 'child_process'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,93 +37,45 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      // Create a temporary file
-      const bytes = await file.arrayBuffer()
-      const buffer = Buffer.from(bytes)
+      // Get backend URL from environment variable
+      const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000'
       
-      // Generate a unique filename
-      const timestamp = Date.now()
-      const tempFileName = `attendance_${timestamp}.csv`
-      // Use /tmp directory which is writable in Vercel serverless environment
-      const tempFilePath = join('/tmp', tempFileName)
-      
-      // Write the file
-      await writeFile(tempFilePath, buffer)
+      // Create FormData for the backend request
+      const backendFormData = new FormData()
+      backendFormData.append('csv_file', file)
+      backendFormData.append('cohort_type', cohortType)
+      backendFormData.append('cohort_number', cohortNumber)
+      backendFormData.append('subject', subject)
+      backendFormData.append('class_date', date)
+      backendFormData.append('teacher_name', teacherName)
 
-      // Call the Python script
-      const pythonScriptPath = join(process.cwd(), 'attendance_processor.py')
-      
-      const result = await new Promise<string>((resolve, reject) => {
-        const python = spawn('python3', [
-          pythonScriptPath,
-          tempFilePath,
-          cohortType,
-          cohortNumber,
-          subject,
-          date,
-          teacherName
-        ])
-
-        let output = ''
-        let errorOutput = ''
-
-        python.stdout.on('data', (data) => {
-          output += data.toString()
-        })
-
-        python.stderr.on('data', (data) => {
-          errorOutput += data.toString()
-        })
-
-        python.on('close', (code) => {
-          if (code === 0) {
-            resolve(output)
-          } else {
-            reject(new Error(`Python script failed with code ${code}: ${errorOutput}`))
-          }
-        })
-
-        python.on('error', (error) => {
-          reject(new Error(`Failed to start Python script: ${error.message}`))
-        })
+      // Call the Flask backend
+      const response = await fetch(`${backendUrl}/process-attendance`, {
+        method: 'POST',
+        body: backendFormData,
       })
 
-      // Clean up the temporary file
-      try {
-        await unlink(tempFilePath)
-      } catch (e) {
-        console.warn('Failed to delete temporary file:', e)
-      }
+      const result = await response.json()
 
-      // Parse the result
-      let processResult
-      try {
-        processResult = JSON.parse(result)
-      } catch (e) {
-        throw new Error(`Invalid JSON response from Python script: ${result}`)
-      }
-
-      // Check if there was an error in processing
-      if (processResult.error) {
+      if (!response.ok) {
         return NextResponse.json(
-          { error: processResult.error },
-          { status: 400 }
+          { 
+            error: result.error || 'Backend processing failed',
+            details: result.details || 'Unknown error from backend'
+          },
+          { status: response.status }
         )
       }
 
       // Return success result
-      return NextResponse.json({
-        success: true,
-        message: 'Attendance processed successfully',
-        ...processResult
-      })
+      return NextResponse.json(result)
 
     } catch (error) {
-      console.error('Processing error:', error)
+      console.error('Backend communication error:', error)
       return NextResponse.json(
         { 
-          error: error instanceof Error ? error.message : 'Unknown processing error',
-          details: 'Failed to process attendance file'
+          error: error instanceof Error ? error.message : 'Unknown backend error',
+          details: 'Failed to communicate with backend service'
         },
         { status: 500 }
       )
