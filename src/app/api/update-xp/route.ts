@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
 
     const startTime = Date.now()
-    
+
     // Process users with rate limiting
     for (let i = 0; i < users.length; i++) {
       const user = users[i]
@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
       try {
         // Log progress every 10 users and first/last user
         if (i % 10 === 0 || i === users.length - 1) {
-          console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
+        console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
         }
 
         // Fetch XP from Codedamn API
@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
 
     // Update last fetch time
     lastFetchTime = Date.now()
-    
+
     const executionTime = (lastFetchTime - startTime) / 1000 // Convert to seconds
 
     console.log(`XP update process completed in ${executionTime}s:`, results)

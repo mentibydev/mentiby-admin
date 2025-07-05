@@ -25,9 +25,7 @@ export default function RootLayout({
     <html lang="en" className="dark" suppressHydrationWarning>
       <body className={inter.className} suppressHydrationWarning>
         <AuthProvider>
-          <div className="min-h-screen bg-background">
-            {children}
-          </div>
+          {children}
         </AuthProvider>
       </body>
     </html>
