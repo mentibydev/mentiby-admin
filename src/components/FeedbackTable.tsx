@@ -142,28 +142,28 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
         <div className="h-full overflow-auto">
           <table className="w-full table-auto">
             <thead className="bg-muted/30 sticky top-0 z-10">
-  <tr>
-    {[
-      { key: 'EnrollmentID', label: 'Enrollment ID' },
-      { key: 'FullName', label: 'Full Name' },
-      { key: 'Mentor1Name', label: 'Mentor 1 Name' },
-      { key: 'Mentor2Name', label: 'Mentor 2 Name' },
-      { key: 'Batch', label: 'Batch' },
-      { key: 'Cohort', label: 'Cohort' },
-      { key: 'Mentor1Feedback', label: 'Mentor 1 Feedback' },
-      { key: 'Mentor2Feedback', label: 'Mentor 2 Feedback' },
-      { key: 'OverallFeedback', label: 'Overall Feedback' },
-      { key: 'ChallengesFaced', label: 'Challenges Faced' },
-      { key: 'SuggestionsToImprove', label: 'Suggestions to Improve' },
-      { key: 'OverallMentibyRating', label: 'Overall Mentiby Rating' },
-      { key: 'OverallMentorRating', label: 'Overall Teaching Style Rating' },
-    ].map((field) => (
-      <th key={field.key} className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
-        {field.label}
-      </th>
-    ))}
-  </tr>
-</thead>
+              <tr>
+                {[
+                  { key: 'EnrollmentID', label: 'Enrollment ID' },
+                  { key: 'FullName', label: 'Full Name' },
+                  { key: 'Mentor1Name', label: 'Mentor 1 Name' },
+                  { key: 'Mentor2Name', label: 'Mentor 2 Name' },
+                  { key: 'Batch', label: 'Batch' },
+                  { key: 'Cohort', label: 'Cohort' },
+                  { key: 'Mentor1Feedback', label: 'Mentor 1 Feedback' },
+                  { key: 'Mentor2Feedback', label: 'Mentor 2 Feedback' },
+                  { key: 'OverallFeedback', label: 'Overall Feedback' },
+                  { key: 'ChallengesFaced', label: 'Challenges Faced' },
+                  { key: 'SuggestionsToImprove', label: 'Suggestions to Improve' },
+                  { key: 'OverallMentibyRating', label: 'Overall Mentiby Rating' },
+                  { key: 'OverallMentorRating', label: 'Overall Teaching Style Rating' },
+                ].map((field) => (
+                  <th key={field.key} className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+                    {field.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
             <tbody className="divide-y divide-border/30">
               {filteredData.map((row) => (
                 <tr key={row.EnrollmentID} className="hover:bg-muted/20">
