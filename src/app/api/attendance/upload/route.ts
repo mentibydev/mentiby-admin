@@ -12,9 +12,10 @@ export async function POST(request: NextRequest) {
     const cohortNumber = formData.get('cohort_number') as string
     const subject = formData.get('subject') as string
     const date = formData.get('date') as string
+    const teacherName = formData.get('teacher_name') as string
 
     // Validate inputs
-    if (!file || !cohortType || !cohortNumber || !subject || !date) {
+    if (!file || !cohortType || !cohortNumber || !subject || !date || !teacherName) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -68,7 +69,9 @@ export async function POST(request: NextRequest) {
           tempFilePath,
           cohortType,
           cohortNumber,
-          date
+          subject,
+          date,
+          teacherName
         ])
 
         let output = ''

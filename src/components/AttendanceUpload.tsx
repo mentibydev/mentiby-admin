@@ -15,6 +15,7 @@ export default function AttendanceUpload() {
   const [cohortNumber, setCohortNumber] = useState('')
   const [subject, setSubject] = useState('')
   const [date, setDate] = useState('')
+  const [teacherName, setTeacherName] = useState('')
   const [csvFile, setCsvFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
@@ -69,7 +70,7 @@ export default function AttendanceUpload() {
     e.preventDefault()
     
     // Validation
-    if (!cohortType || !cohortNumber || !subject || !date || !csvFile) {
+    if (!cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile) {
       alert('Please fill in all fields and select a CSV file')
       return
     }
@@ -85,6 +86,7 @@ export default function AttendanceUpload() {
       formData.append('cohort_number', cohortNumber)
       formData.append('subject', subject)
       formData.append('date', date)
+      formData.append('teacher_name', teacherName)
 
       // Call the backend API endpoint (you'll need to create this)
       const response = await fetch('/api/attendance/upload', {
@@ -106,6 +108,7 @@ export default function AttendanceUpload() {
         setCohortNumber('')
         setSubject('')
         setDate('')
+        setTeacherName('')
         setCsvFile(null)
         
         // Reset file input
@@ -136,6 +139,7 @@ export default function AttendanceUpload() {
     setCohortNumber('')
     setSubject('')
     setDate('')
+    setTeacherName('')
     setCsvFile(null)
     setUploadResult(null)
     
@@ -219,19 +223,38 @@ export default function AttendanceUpload() {
             </div>
           </div>
 
-          {/* Date */}
-          <div className="max-w-md">
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Calendar className="w-4 h-4 inline mr-2" />
-              Class Date
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-            />
+          {/* Date and Teacher Name Row */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Date */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Class Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+              />
+            </div>
+
+            {/* Teacher Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Users className="w-4 h-4 inline mr-2" />
+                Teacher Name
+              </label>
+              <input
+                type="text"
+                value={teacherName}
+                onChange={(e) => setTeacherName(e.target.value)}
+                placeholder="e.g., Swaroop"
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+              />
+            </div>
           </div>
 
           {/* File Upload Area */}
@@ -304,7 +327,7 @@ export default function AttendanceUpload() {
           <div className="flex gap-4 pt-6">
             <button
               type="submit"
-              disabled={isUploading || !cohortType || !cohortNumber || !subject || !date || !csvFile}
+              disabled={isUploading || !cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile}
               className="flex-1 max-w-xs bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 hover:from-purple-700 hover:via-blue-700 hover:to-teal-700 disabled:from-gray-600 disabled:via-gray-600 disabled:to-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2"
             >
               {isUploading ? (
@@ -469,10 +492,12 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
             <h3 className="text-blue-400 font-semibold mb-2">CSV Format Instructions</h3>
             <ul className="text-blue-300 text-sm space-y-1">
               <li>• Upload meeting attendance export CSV from Teams/Zoom</li>
-              <li>• File should contain participant names and meeting duration</li>
-              <li>• Students with ≥60% attendance time will be marked as present</li>
-              <li>• Enrollment IDs will be extracted automatically from names</li>
-              <li>• Date format should be YYYY-MM-DD</li>
+              <li>• File should contain Roll Numbers and meeting duration</li>
+              <li>• Students with ≥10% attendance time will be marked as present</li>
+              <li>• Enrollment IDs will be extracted automatically from onboarding data</li>
+              <li>• Date format should be YYYY-MM-DD in CSV</li>
+              <li>• Roll Number should be in the format 2XMBYXXX (e.g., 25MBY3001)</li>
+              <li>• If Roll Number is not present or not in the format, it will be skipped</li>
             </ul>
           </div>
         </div>
