@@ -18,7 +18,23 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+
+# Configure CORS to allow localhost and Vercel domains
+def cors_origins(origin):
+    """Allow localhost and any Vercel domain"""
+    if origin is None:
+        return True
+    allowed_patterns = [
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "https://mentiby-admin.vercel.app"
+    ]
+    # Allow any Vercel domain
+    if origin.startswith("https://") and origin.endswith(".vercel.app"):
+        return True
+    return origin in allowed_patterns
+
+CORS(app, origins=cors_origins, supports_credentials=True)
 
 # Configure upload settings
 UPLOAD_FOLDER = tempfile.gettempdir()
@@ -148,6 +164,23 @@ def test_database():
             'error': 'Database connection failed',
             'details': str(e)
         }), 500
+
+@app.route('/debug', methods=['GET'])
+def debug_info():
+    """Debug endpoint to check environment and request info"""
+    return jsonify({
+        'environment': {
+            'PORT': os.environ.get('PORT', 'not set'),
+            'FLASK_DEBUG': os.environ.get('FLASK_DEBUG', 'not set'),
+            'NEXT_PUBLIC_SUPABASE_URL': os.environ.get('NEXT_PUBLIC_SUPABASE_URL', 'not set')[:50] + '...' if os.environ.get('NEXT_PUBLIC_SUPABASE_URL') else 'not set',
+            'SUPABASE_SERVICE_ROLE_KEY': 'set' if os.environ.get('SUPABASE_SERVICE_ROLE_KEY') else 'not set'
+        },
+        'request_info': {
+            'origin': request.headers.get('Origin', 'not set'),
+            'user_agent': request.headers.get('User-Agent', 'not set'),
+            'method': request.method
+        }
+    })
 
 @app.errorhandler(413)
 def request_entity_too_large(error):
