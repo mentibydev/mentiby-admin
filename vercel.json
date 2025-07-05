@@ -2,9 +2,6 @@
   "functions": {
     "src/app/api/attendance/upload/route.ts": {
       "maxDuration": 300
-    },
-    "api/attendance_processor.py": {
-      "runtime": "python3.9"
     }
   },
   "crons": [
