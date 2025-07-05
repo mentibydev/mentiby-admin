@@ -20,21 +20,8 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
 # Configure CORS to allow localhost and Vercel domains
-def cors_origins(origin):
-    """Allow localhost and any Vercel domain"""
-    if origin is None:
-        return True
-    allowed_patterns = [
-        "http://localhost:3000",
-        "https://localhost:3000",
-        "https://mentiby-admin.vercel.app"
-    ]
-    # Allow any Vercel domain
-    if origin.startswith("https://") and origin.endswith(".vercel.app"):
-        return True
-    return origin in allowed_patterns
-
-CORS(app, origins=cors_origins, supports_credentials=True)
+# Using permissive CORS for now since regex patterns can be problematic
+CORS(app, origins="*", supports_credentials=False)
 
 # Configure upload settings
 UPLOAD_FOLDER = tempfile.gettempdir()
