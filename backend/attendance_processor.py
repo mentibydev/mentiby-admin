@@ -311,21 +311,30 @@ class AttendanceProcessor:
                 for record in attendance_result.data:
                     attendance_lookup[record['enrollment_id']] = record['attendance']
             
+            # Get all existing students from stu table in one query (BATCH OPTIMIZATION)
+            enrollment_ids = [student['EnrollmentID'] for student in onboarding_result.data]
+            existing_stu_result = self.supabase.table('stu').select('*').in_('enrollment_id', enrollment_ids).execute()
+            
+            # Create lookup for existing students
+            existing_students = {}
+            if existing_stu_result.data:
+                for record in existing_stu_result.data:
+                    existing_students[record['enrollment_id']] = record
+            
             updated_count = 0
             errors = []
+            updates_to_make = []
+            inserts_to_make = []
             
-            # Update each student in stu table
+            # Process each student
             for student in onboarding_result.data:
                 enrollment_id = student['EnrollmentID']
                 name = student['Full Name']
                 
                 try:
-                    # Check if student exists in stu table
-                    stu_result = self.supabase.table('stu').select('*').eq('enrollment_id', enrollment_id).execute()
-                    
-                    if stu_result.data:
-                        # Student exists, update
-                        current_data = stu_result.data[0]
+                    if enrollment_id in existing_students:
+                        # Student exists, prepare update
+                        current_data = existing_students[enrollment_id]
                         new_total_classes = current_data['total_classes'] + 1
                         
                         # Check if student was present today
@@ -335,21 +344,22 @@ class AttendanceProcessor:
                         # Calculate new overall attendance
                         new_overall_attendance = (new_present_classes / new_total_classes) * 100 if new_total_classes > 0 else 0
                         
-                        # Update record
-                        self.supabase.table('stu').update({
+                        # Add to updates batch
+                        updates_to_make.append({
+                            'enrollment_id': enrollment_id,
                             'total_classes': new_total_classes,
                             'present_classes': new_present_classes,
                             'overall_attendance': round(new_overall_attendance, 2),
                             'updated_at': datetime.now().isoformat()
-                        }).eq('enrollment_id', enrollment_id).execute()
+                        })
                         
                     else:
-                        # Student doesn't exist, create new record
+                        # Student doesn't exist, prepare insert
                         was_present = attendance_lookup.get(enrollment_id, False)
                         present_classes = 1 if was_present else 0
                         overall_attendance = (present_classes / 1) * 100
                         
-                        self.supabase.table('stu').insert({
+                        inserts_to_make.append({
                             'enrollment_id': enrollment_id,
                             'name': name,
                             'cohort_type': cohort_type,
@@ -357,15 +367,34 @@ class AttendanceProcessor:
                             'total_classes': 1,
                             'present_classes': present_classes,
                             'overall_attendance': round(overall_attendance, 2)
-                        }).execute()
+                        })
                     
                     updated_count += 1
-                    logger.info(f"Updated stu record for: {enrollment_id}")
                     
                 except Exception as e:
-                    error_msg = f"Error updating {enrollment_id}: {str(e)}"
+                    error_msg = f"Error preparing update for {enrollment_id}: {str(e)}"
                     errors.append(error_msg)
                     logger.error(error_msg)
+            
+            # Execute batch operations
+            try:
+                # Handle inserts first
+                if inserts_to_make:
+                    logger.info(f"Inserting {len(inserts_to_make)} new student records")
+                    self.supabase.table('stu').insert(inserts_to_make).execute()
+                
+                # Handle updates individually (Supabase doesn't support bulk updates easily)
+                if updates_to_make:
+                    logger.info(f"Updating {len(updates_to_make)} existing student records")
+                    for update_data in updates_to_make:
+                        enrollment_id = update_data.pop('enrollment_id')
+                        self.supabase.table('stu').update(update_data).eq('enrollment_id', enrollment_id).execute()
+                        logger.info(f"Updated stu record for: {enrollment_id}")
+                
+            except Exception as e:
+                error_msg = f"Error executing batch operations: {str(e)}"
+                errors.append(error_msg)
+                logger.error(error_msg)
             
             logger.info(f"Updated {updated_count} student records in stu table")
             return {
