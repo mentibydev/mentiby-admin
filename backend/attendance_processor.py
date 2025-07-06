@@ -51,40 +51,7 @@ class AttendanceProcessor:
             self.supabase: Client = create_client(self.supabase_url, self.supabase_service_key)
             logger.info("Supabase client initialized with fallback method")
     
-    def create_table_name(self, cohort_type: str, cohort_number: str) -> str:
-        """Create table name from cohort type and number"""
-        # Convert to lowercase and take only integer part of version
-        cohort_clean = cohort_type.lower().replace(' ', '')
-        number_clean = cohort_number.split('.')[0]  # Take only integer part (3.0 -> 3)
-        table_name = f"{cohort_clean}{number_clean}_logs"
-        logger.info(f"Generated table name: {table_name}")
-        return table_name
-    
-    def ensure_cohort_table_exists(self, table_name: str) -> bool:
-        """Ensure the cohort log table exists, create if not"""
-        try:
-            create_table_sql = f"""
-            CREATE TABLE IF NOT EXISTS {table_name} (
-                log_id SERIAL PRIMARY KEY,
-                enrollment_id TEXT,
-                cohort_type TEXT,
-                cohort_number TEXT,
-                subject TEXT,
-                class_date DATE,
-                teacher_name TEXT,
-                attendance BOOLEAN,
-                logged_at TIMESTAMP DEFAULT now()
-            );
-            """
-            
-            # Create table using RPC
-            self.supabase.rpc("exec_sql", {"sql": create_table_sql}).execute()
-            logger.info(f"Ensured table {table_name} exists")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error ensuring table exists: {str(e)}")
-            return False
+
     
     def parse_csv_file(self, csv_file_path: str) -> Tuple[Dict, List[Dict]]:
         """Parse the CSV file and extract meeting info and participants"""
@@ -198,52 +165,48 @@ class AttendanceProcessor:
         
         # Remove common patterns
         name = re.sub(r'\(Unverified\)', '', name)
-        name = re.sub(r'\[.*?\]', '', name)
-        name = re.sub(r'-\[.*?\]', '', name)
-        name = re.sub(r'^\d{2}MBY\d{4}[-\s]*', '', name)  # Remove enrollment ID from start
-        
-        # Clean up spaces
-        name = re.sub(r'\s+', ' ', name).strip()
-        name = name.strip('-').strip()
+        name = re.sub(r'\s+', ' ', name)
+        name = name.strip()
         
         return name
     
     def parse_duration(self, duration_str: str) -> int:
-        """Parse duration string and return total minutes"""
-        if not duration_str or duration_str.strip() == '':
+        """Parse duration string and convert to minutes"""
+        if not duration_str:
             return 0
         
+        # Remove any extra whitespace
         duration_str = duration_str.strip()
-        total_minutes = 0
         
-        # Pattern for "1h 30m 20s" or "59m 25s" or "2m 11s"
-        hour_match = re.search(r'(\d+)h', duration_str)
-        minute_match = re.search(r'(\d+)m', duration_str)
-        second_match = re.search(r'(\d+)s', duration_str)
+        # Pattern for "1h 30m" or "30m" or "1h" format
+        pattern = r'(?:(\d+)h)?\s*(?:(\d+)m)?'
+        match = re.match(pattern, duration_str)
         
-        if hour_match:
-            total_minutes += int(hour_match.group(1)) * 60
-        if minute_match:
-            total_minutes += int(minute_match.group(1))
-        if second_match:
-            # Round up seconds to nearest minute
-            total_minutes += (int(second_match.group(1)) + 59) // 60
+        if match:
+            hours = int(match.group(1)) if match.group(1) else 0
+            minutes = int(match.group(2)) if match.group(2) else 0
+            return hours * 60 + minutes
         
-        return total_minutes
+        # If no match, try to extract any number as minutes
+        number_match = re.search(r'(\d+)', duration_str)
+        if number_match:
+            return int(number_match.group(1))
+        
+        return 0
     
-    def log_attendance(self, table_name: str, participants: List[Dict], 
+    def log_attendance(self, participants: List[Dict], 
                       cohort_type: str, cohort_number: str, subject: str, 
                       class_date: str, teacher_name: str, meeting_duration_minutes: int) -> Dict:
-        """Log attendance for all participants"""
+        """Log attendance for all participants in the attendance_logs table"""
         logger.info(f"Logging attendance for {len(participants)} participants")
         
-        # Get the last log_id from the table
+        # Get the last log_id from the attendance_logs table
         try:
-            last_log_result = self.supabase.table(table_name).select('log_id').order('log_id', desc=True).limit(1).execute()
+            last_log_result = self.supabase.table('attendance_logs').select('log_id').order('log_id', desc=True).limit(1).execute()
             last_log_id = last_log_result.data[0]['log_id'] if last_log_result.data else 0
-            logger.info(f"Last log_id in {table_name}: {last_log_id}")
+            logger.info(f"Last log_id in attendance_logs: {last_log_id}")
         except Exception as e:
-            logger.warning(f"Could not get last log_id from {table_name}: {str(e)}, starting from 0")
+            logger.warning(f"Could not get last log_id from attendance_logs: {str(e)}, starting from 0")
             last_log_id = 0
         
         inserted_count = 0
@@ -268,7 +231,7 @@ class AttendanceProcessor:
                     'attendance': attendance
                 }
                 
-                self.supabase.table(table_name).insert(insert_data).execute()
+                self.supabase.table('attendance_logs').insert(insert_data).execute()
                 current_log_id += 1
                 
                 inserted_count += 1
@@ -290,7 +253,7 @@ class AttendanceProcessor:
             logger.error(f"Error logging attendance: {str(e)}")
             raise
     
-    def update_stu_table(self, cohort_type: str, cohort_number: str, class_date: str, table_name: str) -> Dict:
+    def update_stu_table(self, cohort_type: str, cohort_number: str, class_date: str) -> Dict:
         """Update the stu table with cumulative attendance stats"""
         logger.info(f"Updating stu table for {cohort_type} {cohort_number}")
         
@@ -302,8 +265,8 @@ class AttendanceProcessor:
                 logger.warning(f"No students found in onboarding for {cohort_type} {cohort_number}")
                 return {'updated': 0, 'errors': ['No students found in onboarding table']}
             
-            # Get today's attendance logs
-            attendance_result = self.supabase.table(table_name).select('enrollment_id, attendance').eq('class_date', class_date).execute()
+            # Get today's attendance logs from attendance_logs table
+            attendance_result = self.supabase.table('attendance_logs').select('enrollment_id, attendance').eq('class_date', class_date).eq('cohort_type', cohort_type).eq('cohort_number', cohort_number).execute()
             
             # Create attendance lookup
             attendance_lookup = {}
@@ -413,16 +376,6 @@ class AttendanceProcessor:
         logger.info(f"Cohort: {cohort_type} {cohort_number}, Subject: {subject}, Date: {class_date}, Teacher: {teacher_name}")
         
         try:
-            # Create table name
-            table_name = self.create_table_name(cohort_type, cohort_number)
-            
-            # Ensure table exists (create if not)
-            if not self.ensure_cohort_table_exists(table_name):
-                return {
-                    'success': False,
-                    'error': f'Failed to create table: {table_name}'
-                }
-            
             # Parse CSV file
             meeting_info, participants = self.parse_csv_file(csv_file_path)
             
@@ -434,18 +387,20 @@ class AttendanceProcessor:
             
             # Log attendance
             attendance_result = self.log_attendance(
-                table_name, participants, cohort_type, cohort_number, 
+                participants, cohort_type, cohort_number, 
                 subject, class_date, teacher_name, meeting_info.get('duration_minutes', 90)
             )
             
             # Update stu table
-            stu_result = self.update_stu_table(cohort_type, cohort_number, class_date, table_name)
+            stu_result = self.update_stu_table(cohort_type, cohort_number, class_date)
             
             # Return success result
             return {
                 'success': True,
                 'message': 'Attendance processed successfully',
-                'table_name': table_name,
+                'subject': subject,
+                'batch': f"{cohort_type} {cohort_number}",
+                'class_date': class_date,
                 'processed': attendance_result['inserted'],
                 'present': attendance_result['present'],
                 'absent': attendance_result['absent'],

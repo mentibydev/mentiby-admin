@@ -441,7 +441,7 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
               
               {uploadResult.success && uploadResult.data && (
                 <div className="space-y-2 text-sm">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-white/5 rounded-xl">
+                  <div className="grid grid-cols-2 md:grid-cols-6 gap-4 p-4 bg-white/5 rounded-xl">
                     <div>
                       <p className="text-gray-400">Total Processed</p>
                       <p className="text-white font-medium">{uploadResult.data.processed || 0}</p>
@@ -455,8 +455,16 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
                       <p className="text-red-400 font-medium">{uploadResult.data.absent || 0}</p>
                     </div>
                     <div>
-                      <p className="text-gray-400">Table</p>
-                      <p className="text-blue-400 font-medium">{uploadResult.data.table_name || 'N/A'}</p>
+                      <p className="text-gray-400">Subject</p>
+                      <p className="text-purple-400 font-medium">{uploadResult.data.subject || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Batch</p>
+                      <p className="text-blue-400 font-medium">{uploadResult.data.batch || 'N/A'}</p>
+                    </div>
+                    <div>
+                      <p className="text-gray-400">Date</p>
+                      <p className="text-cyan-400 font-medium">{uploadResult.data.class_date || 'N/A'}</p>
                     </div>
                   </div>
                   
