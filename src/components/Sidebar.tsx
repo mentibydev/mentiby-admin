@@ -91,11 +91,14 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       {/* Header */}
       <div className="p-4 sm:p-6 border-b border-border/50">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 gradient-purple rounded-xl flex items-center justify-center glow-purple">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 rounded-xl flex items-center justify-center shadow-lg shadow-orange-500/25">
             <Users className="w-5 h-5 sm:w-7 sm:h-7 text-white" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-2xl font-bold gradient-text">MentiBY</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">
+              <span className="bg-gradient-to-r from-orange-400 via-yellow-400 to-orange-500 bg-clip-text text-transparent">Menti</span>
+              <span className="text-white">BY</span>
+            </h1>
             <p className="text-xs sm:text-sm text-muted-foreground">Admin Panel</p>
           </div>
         </div>
