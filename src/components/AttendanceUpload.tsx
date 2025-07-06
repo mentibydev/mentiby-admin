@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Upload, Calendar, Book, Users, Play, CheckCircle, XCircle, AlertCircle, FileText, Download } from 'lucide-react'
 
 interface UploadResult {
@@ -20,6 +20,45 @@ export default function AttendanceUpload() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
   const [dragActive, setDragActive] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+
+  // Ref for auto-scroll to results
+  const resultsRef = useRef<HTMLDivElement>(null)
+
+  // Auto-scroll to results when upload is successful
+  useEffect(() => {
+    if (uploadResult?.success && resultsRef.current) {
+      // Add a small delay to ensure the DOM is updated
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        })
+      }, 300)
+    }
+  }, [uploadResult])
+
+  // Simulate progress animation during upload
+  useEffect(() => {
+    if (isUploading) {
+      setUploadProgress(0)
+      const interval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 95) {
+            clearInterval(interval)
+            return 95 // Stop at 95% until actual upload completes
+          }
+          // Simulate realistic progress with varying speeds
+          const increment = Math.random() * 15 + 5 // Random increment between 5-20
+          return Math.min(prev + increment, 95)
+        })
+      }, 200) // Update every 200ms for smooth animation
+
+      return () => clearInterval(interval)
+    } else {
+      setUploadProgress(0)
+    }
+  }, [isUploading])
 
   const cohortTypes = [
     'Basic',
@@ -77,6 +116,7 @@ export default function AttendanceUpload() {
 
     setIsUploading(true)
     setUploadResult(null)
+    setUploadProgress(0)
 
     try {
       // Create FormData for file upload
@@ -95,6 +135,12 @@ export default function AttendanceUpload() {
       })
 
       const result = await response.json()
+
+      // Complete the progress animation
+      setUploadProgress(100)
+      
+      // Small delay to show 100% before showing results
+      await new Promise(resolve => setTimeout(resolve, 500))
 
       if (response.ok) {
         setUploadResult({
@@ -131,6 +177,7 @@ export default function AttendanceUpload() {
       })
     } finally {
       setIsUploading(false)
+      setUploadProgress(0)
     }
   }
 
@@ -327,14 +374,63 @@ export default function AttendanceUpload() {
           <div className="flex gap-4 pt-6">
             <button
               type="submit"
-              disabled={isUploading || !cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile}
-              className="flex-1 max-w-xs bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 hover:from-purple-700 hover:via-blue-700 hover:to-teal-700 disabled:from-gray-600 disabled:via-gray-600 disabled:to-gray-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg hover:shadow-xl disabled:shadow-none flex items-center justify-center gap-2"
+              disabled={!cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile}
+              className={`flex-1 max-w-xs bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform shadow-lg flex items-center justify-center gap-2 ${
+                isUploading 
+                  ? 'animate-pulse shadow-2xl shadow-purple-500/25' 
+                  : 'hover:from-purple-700 hover:via-blue-700 hover:to-teal-700 hover:scale-[1.02] hover:shadow-xl disabled:from-gray-600 disabled:via-gray-600 disabled:to-gray-600 disabled:scale-100 disabled:cursor-not-allowed disabled:shadow-none'
+              }`}
             >
               {isUploading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Processing...
-                </>
+                <div className="flex items-center gap-3">
+                  {/* Circular Progress Indicator */}
+                  <div className="relative w-8 h-8">
+                    {/* Background Circle */}
+                    <svg className="w-8 h-8 transform -rotate-90" viewBox="0 0 32 32">
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="12"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.2)"
+                        strokeWidth="3"
+                      />
+                      {/* Progress Circle */}
+                      <circle
+                        cx="16"
+                        cy="16"
+                        r="12"
+                        fill="none"
+                        stroke="rgba(255,255,255,0.9)"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 12}`}
+                        strokeDashoffset={`${2 * Math.PI * 12 * (1 - uploadProgress / 100)}`}
+                        className="transition-all duration-300 ease-out drop-shadow-sm"
+                        style={{
+                          filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.4))'
+                        }}
+                      />
+                    </svg>
+                    
+                    {/* Percentage Text */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className="text-xs font-bold text-white/90 leading-none">
+                        {Math.round(uploadProgress)}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Loading Text */}
+                  <span className="relative">
+                    Processing
+                    <span className="absolute -right-4 flex">
+                      <span className="animate-pulse delay-0">.</span>
+                      <span className="animate-pulse delay-150">.</span>
+                      <span className="animate-pulse delay-300">.</span>
+                    </span>
+                  </span>
+                </div>
               ) : (
                 <>
                   <Play className="w-5 h-5" />
@@ -360,7 +456,7 @@ export default function AttendanceUpload() {
           uploadResult.success 
             ? 'border-green-500/20' 
             : 'border-red-500/20'
-        }`}>
+        }`} ref={resultsRef}>
           <div className="flex items-start gap-3">
             {uploadResult.success ? (
               <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
