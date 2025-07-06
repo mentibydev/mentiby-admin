@@ -44,15 +44,18 @@ export default function AttendanceUpload() {
       setUploadProgress(0)
       const interval = setInterval(() => {
         setUploadProgress(prev => {
-          if (prev >= 95) {
+          if (prev >= 80 && prev < 95) {
+            // After 80%, increment by +1 gradually
+            return prev + 1
+          } else if (prev >= 95) {
             clearInterval(interval)
-            return 95 // Stop at 95% until actual upload completes
+            return prev // Stop at current value until actual upload completes
           }
-          // Simulate realistic progress with varying speeds
-          const increment = Math.random() * 15 + 5 // Random increment between 5-20
-          return Math.min(prev + increment, 95)
+          // Simulate realistic progress with slower speeds to reach 80%
+          const increment = Math.random() * 8 + 2 // Random increment between 2-10 (slower)
+          return Math.min(prev + increment, 80)
         })
-      }, 200) // Update every 200ms for smooth animation
+      }, 300) // Update every 400ms for slower animation
 
       return () => clearInterval(interval)
     } else {
