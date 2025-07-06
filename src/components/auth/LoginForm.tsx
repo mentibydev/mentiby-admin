@@ -41,7 +41,7 @@ export default function LoginForm({ onSuccess, forcedLogout = false }: LoginForm
 
     try {
       const { data, error: authError } = await signIn(email, password)
-      
+
       if (authError) {
         if (authError.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials.')

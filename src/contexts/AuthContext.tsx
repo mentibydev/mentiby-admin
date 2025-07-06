@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const startAuthVerification = useCallback(() => {
     // Only run on client side
     if (typeof window === 'undefined' || !mounted) return
-    
+
     if (verificationIntervalRef.current) {
       clearInterval(verificationIntervalRef.current)
     }
@@ -41,16 +41,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Only verify if we think we have a user
         if (user && session) {
-          
+
           // Use the robust verification method
           const { isValid, user: freshUser, session: freshSession } = await authService.verifyUserExists()
-          
+
           if (!isValid || !freshSession || !freshUser) {
             // User no longer exists or session is invalid - force logout
             setUser(null)
             setSession(null)
             setLoading(false)
-            
+
             // Clear any local storage or session data
             await authService.signOut()
           } else {
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(user)
       setLoading(false)
-      
+
       // Start verification if user is authenticated
       if (user && session) {
         startAuthVerification()
@@ -97,7 +97,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       setUser(session?.user || null)
       setLoading(false)
-      
+
       // Start/stop verification based on auth status
       if (session?.user) {
         startAuthVerification()
@@ -122,7 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (user && session) {
         try {
           const { isValid, user: freshUser, session: freshSession } = await authService.verifyUserExists()
-          
+
           if (!isValid || !freshSession || !freshUser) {
             setUser(null)
             setSession(null)

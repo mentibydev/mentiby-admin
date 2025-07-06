@@ -7,9 +7,9 @@ export async function POST(request: NextRequest) {
       NODE_ENV: process.env.NODE_ENV,
       VERCEL_ENV: process.env.VERCEL_ENV
     })
-    
+
     const formData = await request.formData()
-    
+
     const file = formData.get('csv_file') as File
     const cohortType = formData.get('cohort_type') as string
     const cohortNumber = formData.get('cohort_number') as string
@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
     try {
       // Get backend URL from environment variable
       const backendUrl = process.env.BACKEND_URL || 'http://localhost:5000'
-      
+
       console.log('Backend URL:', backendUrl)
       console.log('Processing file:', file.name)
-      
+
       // Create FormData for the backend request
       const backendFormData = new FormData()
       backendFormData.append('csv_file', file)
@@ -70,13 +70,13 @@ export async function POST(request: NextRequest) {
 
       console.log('Backend response status:', response.status)
       console.log('Backend response headers:', Object.fromEntries(response.headers.entries()))
-      
+
       // Check if response is ok before trying to parse JSON
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Backend error response:', errorText)
         return NextResponse.json(
-          { 
+          {
             error: 'Backend processing failed',
             details: errorText || `HTTP ${response.status}`
           },
@@ -86,14 +86,14 @@ export async function POST(request: NextRequest) {
 
       const responseText = await response.text()
       console.log('Backend response text:', responseText)
-      
+
       let result
       try {
         result = JSON.parse(responseText)
       } catch (jsonError) {
         console.error('JSON parse error:', jsonError)
         return NextResponse.json(
-          { 
+          {
             error: 'Invalid JSON response from backend',
             details: `Response: ${responseText.substring(0, 200)}...`
           },
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error('Backend communication error:', error)
       return NextResponse.json(
-        { 
+        {
           error: error instanceof Error ? error.message : 'Unknown backend error',
           details: 'Failed to communicate with backend service'
         },
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error)
     return NextResponse.json(
-      { 
+      {
         error: error instanceof Error ? error.message : 'Unknown upload error',
         details: 'Failed to handle file upload'
       },

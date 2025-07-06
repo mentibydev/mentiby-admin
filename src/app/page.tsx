@@ -40,7 +40,7 @@ function AdminPanel() {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const { data: onboardingData, error } = await supabase
         .from('onboarding')
         .select('*')
@@ -62,7 +62,7 @@ function AdminPanel() {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const { data: feedbackData, error } = await supabase
         .from('mentibyFeedback')
         .select('*')
@@ -149,7 +149,7 @@ function AdminPanel() {
 
       {/* Mobile Overlay */}
       {isMobileMenuOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setIsMobileMenuOpen(false)}
         />
@@ -161,12 +161,12 @@ function AdminPanel() {
         transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         transition-transform duration-300 ease-in-out lg:transition-none
       `}>
-        <Sidebar 
-          activeTab={activeTab} 
+        <Sidebar
+          activeTab={activeTab}
           onTabChange={handleTabChange}
         />
       </div>
-      
+
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex-1 p-4 sm:p-6 lg:p-8 overflow-auto pt-20 lg:pt-4">

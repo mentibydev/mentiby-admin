@@ -112,7 +112,7 @@ export default function XPLeaderboard() {
 
     const channel = supabase
       .channel('student_xp_changes')
-      .on('postgres_changes', 
+      .on('postgres_changes',
         { event: '*', schema: 'public', table: 'student_xp' },
         (payload) => {
           console.log('📡 Real-time update received:', payload.eventType)
@@ -143,7 +143,7 @@ export default function XPLeaderboard() {
       setUpdateProgress({ current: 0, total: 0 })
 
       const response = await fetch('/api/update-xp?secret=mb_xp_update_secret_2025')
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
@@ -179,7 +179,7 @@ export default function XPLeaderboard() {
       const lastUpdate = new Date(leaderboard[0]?.last_updated || 0)
       const now = new Date()
       const hoursSinceUpdate = (now.getTime() - lastUpdate.getTime()) / (1000 * 60 * 60)
-      
+
       if (hoursSinceUpdate >= 24) {
         updateXPData()
       }
@@ -253,7 +253,7 @@ export default function XPLeaderboard() {
             Rankings based on Codedamn platform experience points
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           {lastUpdated && (
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -266,8 +266,8 @@ export default function XPLeaderboard() {
               onClick={() => setShowFilters(!showFilters)}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg transition-colors font-medium text-sm",
-                showFilters 
-                  ? "bg-purple-600 text-white" 
+                showFilters
+                  ? "bg-purple-600 text-white"
                   : "bg-muted/50 hover:bg-muted/70 text-foreground"
               )}
             >
@@ -379,7 +379,7 @@ export default function XPLeaderboard() {
               <div>
                 <p className="text-sm text-muted-foreground">Avg XP</p>
                 <p className="text-2xl font-bold text-purple-400">
-                  {filteredLeaderboard.length > 0 
+                  {filteredLeaderboard.length > 0
                     ? formatXP(Math.round(filteredLeaderboard.reduce((sum, entry) => sum + entry.xp, 0) / filteredLeaderboard.length))
                     : '0'
                   }
@@ -429,28 +429,28 @@ export default function XPLeaderboard() {
                       {getRankIcon(index + 1)}
                       <span className="font-bold">{index + 1}</span>
                     </div>
-                    
+
                     <div className="col-span-2 font-mono text-sm">
                       {entry.enrollment_id}
                     </div>
-                    
+
                     <div className="col-span-3">
                       <div className="font-semibold truncate">{entry.full_name}</div>
                       <div className="text-xs opacity-70 truncate">{entry.email}</div>
                     </div>
-                    
+
                     <div className="col-span-2">
                       <span className="px-2 py-1 bg-background/20 rounded-lg text-xs font-medium">
                         {entry.cohort_type}
                       </span>
                     </div>
-                    
+
                     <div className="col-span-2">
                       <span className="px-2 py-1 bg-background/20 rounded-lg text-xs font-medium">
                         {entry.cohort_number}
                       </span>
                     </div>
-                    
+
                     <div className="col-span-2 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Zap className="w-4 h-4 text-yellow-400" />

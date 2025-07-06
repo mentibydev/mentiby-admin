@@ -31,6 +31,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground min-h-screen;
     background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
@@ -193,23 +194,32 @@ td {
   min-width: 100px;
 }
 
-td:nth-child(1) { /* Enrollment ID */
+td:nth-child(1) {
+  /* Enrollment ID */
   min-width: 120px;
 }
 
-td:nth-child(2), td:nth-child(3) { /* Cohort Type & Number */
+td:nth-child(2),
+td:nth-child(3) {
+  /* Cohort Type & Number */
   min-width: 140px;
 }
 
-td:nth-child(4) { /* Full Name */
+td:nth-child(4) {
+  /* Full Name */
   min-width: 180px;
 }
 
-td:nth-child(5) { /* Email */
+td:nth-child(5) {
+  /* Email */
   min-width: 200px;
 }
 
-td:nth-child(15), td:nth-child(16), td:nth-child(17), td:nth-child(18) { /* Long text fields */
+td:nth-child(15),
+td:nth-child(16),
+td:nth-child(17),
+td:nth-child(18) {
+  /* Long text fields */
   min-width: 200px;
   max-width: 300px;
 }
@@ -221,4 +231,4 @@ td:nth-child(15), td:nth-child(16), td:nth-child(17), td:nth-child(18) { /* Long
   right: 4px;
   transform: translateY(-50%);
   z-index: 10;
-} 
+}

@@ -30,9 +30,9 @@ export default function AttendanceUpload() {
     if (uploadResult?.success && resultsRef.current) {
       // Add a small delay to ensure the DOM is updated
       setTimeout(() => {
-        resultsRef.current?.scrollIntoView({ 
-          behavior: 'smooth', 
-          block: 'start' 
+        resultsRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
         })
       }, 300)
     }
@@ -110,7 +110,7 @@ export default function AttendanceUpload() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     // Validation
     if (!cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile) {
       alert('Please fill in all fields and select a CSV file')
@@ -141,7 +141,7 @@ export default function AttendanceUpload() {
 
       // Complete the progress animation
       setUploadProgress(100)
-      
+
       // Small delay to show 100% before showing results
       await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -151,7 +151,7 @@ export default function AttendanceUpload() {
           message: 'Attendance uploaded successfully!',
           data: result
         })
-        
+
         // Reset form
         setCohortType('')
         setCohortNumber('')
@@ -159,11 +159,11 @@ export default function AttendanceUpload() {
         setDate('')
         setTeacherName('')
         setCsvFile(null)
-        
+
         // Reset file input
         const fileInput = document.getElementById('csvFile') as HTMLInputElement
         if (fileInput) fileInput.value = ''
-        
+
       } else {
         setUploadResult({
           success: false,
@@ -192,7 +192,7 @@ export default function AttendanceUpload() {
     setTeacherName('')
     setCsvFile(null)
     setUploadResult(null)
-    
+
     const fileInput = document.getElementById('csvFile') as HTMLInputElement
     if (fileInput) fileInput.value = ''
   }
@@ -275,19 +275,19 @@ export default function AttendanceUpload() {
 
           {/* Date and Teacher Name Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Date */}
+            {/* Date */}
             <div>
-            <label className="block text-sm font-medium text-gray-300 mb-2">
-              <Calendar className="w-4 h-4 inline mr-2" />
-              Class Date
-            </label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-            />
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                <Calendar className="w-4 h-4 inline mr-2" />
+                Class Date
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                required
+                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+              />
             </div>
 
             {/* Teacher Name */}
@@ -313,13 +313,12 @@ export default function AttendanceUpload() {
               <Upload className="w-4 h-4 inline mr-2" />
               Attendance CSV File
             </label>
-            
+
             <div
-              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${
-                dragActive
+              className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-200 ${dragActive
                   ? 'border-purple-500 bg-purple-500/10'
                   : 'border-white/20 hover:border-purple-500/50 hover:bg-white/5'
-              }`}
+                }`}
               onDragEnter={handleDrag}
               onDragLeave={handleDrag}
               onDragOver={handleDrag}
@@ -378,11 +377,10 @@ export default function AttendanceUpload() {
             <button
               type="submit"
               disabled={!cohortType || !cohortNumber || !subject || !date || !teacherName || !csvFile}
-              className={`flex-1 max-w-xs bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform shadow-lg flex items-center justify-center gap-2 ${
-                isUploading 
-                  ? 'animate-pulse shadow-2xl shadow-purple-500/25' 
+              className={`flex-1 max-w-xs bg-gradient-to-r from-purple-600 via-blue-600 to-teal-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 transform shadow-lg flex items-center justify-center gap-2 ${isUploading
+                  ? 'animate-pulse shadow-2xl shadow-purple-500/25'
                   : 'hover:from-purple-700 hover:via-blue-700 hover:to-teal-700 hover:scale-[1.02] hover:shadow-xl disabled:from-gray-600 disabled:via-gray-600 disabled:to-gray-600 disabled:scale-100 disabled:cursor-not-allowed disabled:shadow-none'
-              }`}
+                }`}
             >
               {isUploading ? (
                 <div className="flex items-center gap-3">
@@ -415,7 +413,7 @@ export default function AttendanceUpload() {
                         }}
                       />
                     </svg>
-                    
+
                     {/* Percentage Text */}
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-xs font-bold text-white/90 leading-none">
@@ -423,7 +421,7 @@ export default function AttendanceUpload() {
                       </span>
                     </div>
                   </div>
-                  
+
                   {/* Loading Text */}
                   <span className="relative">
                     Processing
@@ -455,25 +453,23 @@ export default function AttendanceUpload() {
 
       {/* Upload Result */}
       {uploadResult && (
-        <div className={`bg-black/40 backdrop-blur-xl border rounded-2xl p-6 ${
-          uploadResult.success 
-            ? 'border-green-500/20' 
+        <div className={`bg-black/40 backdrop-blur-xl border rounded-2xl p-6 ${uploadResult.success
+            ? 'border-green-500/20'
             : 'border-red-500/20'
-        }`} ref={resultsRef}>
+          }`} ref={resultsRef}>
           <div className="flex items-start gap-3">
             {uploadResult.success ? (
               <CheckCircle className="w-6 h-6 text-green-400 flex-shrink-0 mt-0.5" />
             ) : (
               <XCircle className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" />
             )}
-            
+
             <div className="flex-1">
-              <h3 className={`font-semibold mb-2 ${
-                uploadResult.success ? 'text-green-400' : 'text-red-400'
-              }`}>
+              <h3 className={`font-semibold mb-2 ${uploadResult.success ? 'text-green-400' : 'text-red-400'
+                }`}>
                 {uploadResult.message}
               </h3>
-              
+
               {uploadResult.error && (
                 <div className="text-red-300 text-sm mb-3">
                   <p className="mb-2">{uploadResult.error}</p>
@@ -489,7 +485,7 @@ export default function AttendanceUpload() {
                           <p className="text-blue-300 text-xs">{uploadResult.data.instructions}</p>
                         </div>
                       </div>
-                      
+
                       <div className="space-y-2">
                         <p className="text-blue-300 text-xs font-medium">
                           Copy this SQL and run it in Supabase Dashboard → SQL Editor:
@@ -505,7 +501,7 @@ export default function AttendanceUpload() {
                             Copy SQL
                           </button>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-xs text-blue-300 mt-2">
                           <span>💡</span>
                           <span>After creating the table, try uploading again. The system will automatically add date columns.</span>
@@ -513,7 +509,7 @@ export default function AttendanceUpload() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Fallback for generic table errors */}
                   {uploadResult.error.includes('table') && uploadResult.error.includes('does not exist') && !uploadResult.data?.create_sql && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 mt-2">
@@ -522,7 +518,7 @@ export default function AttendanceUpload() {
                         The course table doesn&apos;t exist. Create it in Supabase SQL Editor:
                       </p>
                       <code className="block bg-black/50 p-2 rounded text-xs text-green-400 whitespace-pre-wrap">
-{`CREATE TABLE IF NOT EXISTS ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} (
+                        {`CREATE TABLE IF NOT EXISTS ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} (
     id SERIAL PRIMARY KEY,
     enrollmentid VARCHAR(50) NOT NULL,
     name VARCHAR(255) NOT NULL,
@@ -537,7 +533,7 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
                   )}
                 </div>
               )}
-              
+
               {uploadResult.success && uploadResult.data && (
                 <div className="space-y-2 text-sm">
                   <div className="grid grid-cols-2 md:grid-cols-6 gap-4 p-4 bg-white/5 rounded-xl">
@@ -566,7 +562,7 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
                       <p className="text-cyan-400 font-medium">{uploadResult.data.class_date || 'N/A'}</p>
                     </div>
                   </div>
-                  
+
                   {uploadResult.data.errors && uploadResult.data.errors.length > 0 && (
                     <div className="mt-4">
                       <div className="flex items-center gap-2 mb-2">
@@ -600,11 +596,13 @@ ALTER TABLE ${cohortType.toLowerCase()}${cohortNumber.replace('.', '_')} DISABLE
             <ul className="text-blue-300 text-sm space-y-1">
               <li>• Upload meeting attendance export CSV from Teams/Zoom</li>
               <li>• File should contain Roll Numbers and meeting duration</li>
+              <li>• Ensure that you are entering the correct details in the above fields</li>
               <li>• Students with ≥10% attendance time will be marked as present</li>
-              <li>• Enrollment IDs will be extracted automatically from onboarding data</li>
-              <li>• Date format should be YYYY-MM-DD in CSV</li>
+              <li>• Enrollment ID == Roll Number</li>
               <li>• Roll Number should be in the format 2XMBYXXX (e.g., 25MBY3001)</li>
-              <li>• If Roll Number is not present or not in the format, it will be skipped</li>
+              <li>• If Roll Number is not present in the onboarding data, it will be skipped</li>
+              <li>• Enrollment IDs and Names will be extracted automatically from onboarding data</li>
+              <li>• If Roll Number is absent in roll num column or names column or not in the format, it will be skipped</li>
             </ul>
           </div>
         </div>

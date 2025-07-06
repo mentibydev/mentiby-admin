@@ -25,7 +25,7 @@ export default function PasswordSetup({ onSuccess }: PasswordSetupProps) {
     const hasLower = /[a-z]/.test(pwd)
     const hasNumber = /\d/.test(pwd)
     const hasSpecial = /[!@#$%^&*(),.?":{}|<>]/.test(pwd)
-    
+
     return {
       minLength,
       hasUpper,
@@ -62,7 +62,7 @@ export default function PasswordSetup({ onSuccess }: PasswordSetupProps) {
     try {
       // Update password and display name
       const { error: updateError } = await updatePassword(password, name.trim())
-      
+
       if (updateError) {
         setError(updateError.message)
       } else {
@@ -83,7 +83,7 @@ export default function PasswordSetup({ onSuccess }: PasswordSetupProps) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-gradient-to-br from-green-900/20 via-blue-900/20 to-purple-900/20" />
-        
+
         <div className="relative w-full max-w-md">
           <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl text-center">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-blue-500 rounded-2xl mb-4 shadow-lg">

@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const secret = searchParams.get('secret')
     const userAgent = request.headers.get('user-agent') || ''
     const isVercelCron = userAgent.includes('vercel-cron')
-    
+
     // Allow if it's a Vercel cron request OR if secret matches
     if (!isVercelCron && secret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -58,11 +58,11 @@ export async function GET(request: NextRequest) {
     // Process users with rate limiting
     for (let i = 0; i < users.length; i++) {
       const user = users[i]
-      
+
       try {
         // Log progress every 10 users and first/last user
         if (i % 10 === 0 || i === users.length - 1) {
-        console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
+          console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
         }
 
         // Fetch XP from Codedamn API
@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
         }
 
         const xpData: CodedamnXPResponse[] = await xpResponse.json()
-        
+
         if (!xpData || !xpData[0] || xpData[0].output.status !== 'ok') {
           console.warn(`No XP data for ${user.Email}:`, xpData?.[0]?.output?.errorMessage || 'User not found on Codedamn')
           // Skip this user - don't count as failed since they might not have a Codedamn account
@@ -112,9 +112,9 @@ export async function GET(request: NextRequest) {
               xp: xp,
               last_updated: new Date().toISOString()
             },
-            { 
+            {
               onConflict: 'email',
-              ignoreDuplicates: false 
+              ignoreDuplicates: false
             }
           )
 
@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
         console.error(`Error processing ${user.Email}:`, error)
         results.failed++
         results.errors.push(`${user.Email}: ${error instanceof Error ? error.message : 'Unknown error'}`)
-        
+
         // If it's a rate limit error, wait longer
         if (error instanceof Error && error.message.includes('rate limit')) {
           console.log('Rate limit detected, waiting 5 minutes...')
@@ -165,9 +165,9 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('XP update process failed:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to update XP', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+      {
+        error: 'Failed to update XP',
+        details: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }
     )

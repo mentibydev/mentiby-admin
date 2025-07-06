@@ -30,16 +30,16 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
         // 1. User doesn't have display_name set (indicating they haven't completed setup)
         // 2. User was created very recently (within last 5 minutes) AND came via magic link
         // 3. User metadata explicitly indicates setup is needed
-        
+
         const hasDisplayName = !!(user.user_metadata?.display_name || user.user_metadata?.full_name)
         const needsSetup = user.user_metadata?.needs_password_setup === true
-        
+
         // Only calculate time difference on client side to prevent hydration issues
         let isVeryNew = false
         if (user.created_at) {
           isVeryNew = (Date.now() - new Date(user.created_at).getTime()) < 5 * 60 * 1000 // 5 minutes
         }
-        
+
         // Only require setup if explicitly marked as needing it, or if very new and no display name
         setNeedsPasswordSetup(needsSetup || (!hasDisplayName && isVeryNew))
         setWasForcedLogout(false) // Reset forced logout flag when user is authenticated
@@ -90,11 +90,11 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   // Show login form if not authenticated
   if (!user || !session) {
     return (
-      <LoginForm 
+      <LoginForm
         onSuccess={() => {
           setAuthChecked(false)
           setWasForcedLogout(false)
-        }} 
+        }}
         forcedLogout={wasForcedLogout}
       />
     )
@@ -103,10 +103,10 @@ export default function AuthWrapper({ children }: AuthWrapperProps) {
   // Show password setup if needed
   if (needsPasswordSetup) {
     return (
-      <PasswordSetup 
+      <PasswordSetup
         onSuccess={() => {
           setNeedsPasswordSetup(false)
-        }} 
+        }}
       />
     )
   }

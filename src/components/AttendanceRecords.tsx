@@ -33,7 +33,7 @@ export default function AttendanceRecords() {
       }
 
       const result = await response.json()
-      
+
       if (result.success) {
         setAttendanceData(result.data)
         setFilteredData(result.data)
@@ -243,20 +243,19 @@ export default function AttendanceRecords() {
                         {record.present_classes}
                       </td>
                       <td className="px-4 py-3 text-sm">
-                        <span 
-                          className={`font-medium ${
-                            record.overall_attendance >= 75 
-                              ? 'text-green-400' 
-                              : record.overall_attendance >= 50 
-                              ? 'text-yellow-400' 
-                              : 'text-red-400'
-                          }`}
+                        <span
+                          className={`font-medium ${record.overall_attendance >= 75
+                              ? 'text-green-400'
+                              : record.overall_attendance >= 50
+                                ? 'text-yellow-400'
+                                : 'text-red-400'
+                            }`}
                         >
                           {record.overall_attendance.toFixed(1)}%
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-muted-foreground">
-                        {record.updated_at 
+                        {record.updated_at
                           ? new Date(record.updated_at).toLocaleDateString()
                           : 'N/A'
                         }

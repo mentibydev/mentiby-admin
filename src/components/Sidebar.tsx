@@ -32,12 +32,12 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   }
 
   // Get display name from user metadata or fall back to email (prevent hydration mismatch)
-  const displayName = mounted && user 
+  const displayName = mounted && user
     ? (user.user_metadata?.display_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Admin')
     : 'Admin'
 
   // Only calculate last login date on client side to prevent hydration issues
-  const lastLoginDate = mounted && user?.last_sign_in_at 
+  const lastLoginDate = mounted && user?.last_sign_in_at
     ? new Date(user.last_sign_in_at).toLocaleDateString()
     : 'Never'
 
@@ -221,14 +221,14 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           <span className="font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
             techSas
           </span>
-          <span className="text-sm" style={{lineHeight: 1}}>❤️</span>
+          <span className="text-sm" style={{ lineHeight: 1 }}>❤️</span>
         </div>
       </div>
 
       {/* Click outside to close menu */}
       {showUserMenu && (
-        <div 
-          className="fixed inset-0 z-40" 
+        <div
+          className="fixed inset-0 z-40"
           onClick={() => setShowUserMenu(false)}
         />
       )}

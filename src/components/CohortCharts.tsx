@@ -244,7 +244,7 @@ export default function CohortCharts({ data, isLoading }: CohortChartsProps) {
               />
               <span className="text-sm sm:text-base lg:text-xl">{selectedCohortType} Cohort Distribution</span>
             </h4>
-            
+
             {/* Chart Container */}
             <div className="relative h-64 sm:h-80 lg:h-96">
               {/* Detailed Pie Chart */}
