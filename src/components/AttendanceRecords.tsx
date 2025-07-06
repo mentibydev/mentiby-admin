@@ -14,7 +14,7 @@ export default function AttendanceRecords() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const cohortTypes = ['Basic', 'Placement', 'Advanced', 'Specialization']
+  const cohortTypes = ['Basic', 'Placement', 'MERN', 'Full Stack']
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -24,8 +24,8 @@ export default function AttendanceUpload() {
   const cohortTypes = [
     'Basic',
     'Placement',
-    'Advanced',
-    'Specialization'
+    'MERN',
+    'Full Stack'
   ]
 
   const handleDrag = (e: React.DragEvent) => {
