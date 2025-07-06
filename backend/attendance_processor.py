@@ -97,14 +97,17 @@ class AttendanceProcessor:
         if participant_section_start == -1:
             raise ValueError("Could not find participants section in CSV")
         
-        # Parse participants
+        # Parse participants and aggregate durations by enrollment ID
+        participant_durations = {}  # enrollment_id -> {'name': str, 'total_duration': int}
+        
         for i in range(participant_section_start, len(lines)):
             line = lines[i].strip()
             if not line or 'In-Meeting Activities' in line:
                 break
             
             parts = [part.strip() for part in line.split('\t')]
-            if len(parts) >= 13 and parts[0]:  # Need at least 13 columns to have Roll Number
+            # Only require name (index 0) and duration (index 3) - Roll Number is optional
+            if len(parts) >= 4 and parts[0] and parts[3]:  
                 name = parts[0]
                 in_meeting_duration = parts[3]
                 roll_number = parts[12].strip() if len(parts) > 12 else ""  # Roll Number is column 13 (index 12)
@@ -125,13 +128,29 @@ class AttendanceProcessor:
                 clean_name = self.clean_name(name, enrollment_id)
                 duration_minutes = self.parse_duration(in_meeting_duration)
                 
-                participants.append({
-                    'name': clean_name,
-                    'enrollment_id': enrollment_id,
-                    'duration_minutes': duration_minutes
-                })
+                # Aggregate durations for same enrollment ID
+                if enrollment_id in participant_durations:
+                    old_duration = participant_durations[enrollment_id]['total_duration']
+                    participant_durations[enrollment_id]['total_duration'] += duration_minutes
+                    new_total = participant_durations[enrollment_id]['total_duration']
+                    logger.info(f"AGGREGATING {enrollment_id}: {old_duration}m + {duration_minutes}m = {new_total}m total")
+                else:
+                    participant_durations[enrollment_id] = {
+                        'name': clean_name,
+                        'total_duration': duration_minutes
+                    }
+                    logger.info(f"NEW RECORD {enrollment_id}: {duration_minutes}m from '{in_meeting_duration}'")
         
-        logger.info(f"Found {len(participants)} participants with enrollment IDs")
+        # Convert aggregated data to participants list
+        participants = []
+        for enrollment_id, data in participant_durations.items():
+            participants.append({
+                'name': data['name'],
+                'enrollment_id': enrollment_id,
+                'duration_minutes': data['total_duration']
+            })
+        
+        logger.info(f"Found {len(participants)} unique participants with enrollment IDs (after aggregating durations)")
         return meeting_info, participants
     
     def is_valid_enrollment_id(self, enrollment_id: str) -> bool:
@@ -177,21 +196,31 @@ class AttendanceProcessor:
         
         # Remove any extra whitespace
         duration_str = duration_str.strip()
+        logger.debug(f"Parsing duration: '{duration_str}'")
         
-        # Pattern for "1h 30m" or "30m" or "1h" format
-        pattern = r'(?:(\d+)h)?\s*(?:(\d+)m)?'
+        # Pattern for "1h 30m 20s" or "30m 15s" or "1h" or "45s" formats
+        pattern = r'(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?'
         match = re.match(pattern, duration_str)
         
         if match:
             hours = int(match.group(1)) if match.group(1) else 0
             minutes = int(match.group(2)) if match.group(2) else 0
-            return hours * 60 + minutes
+            seconds = int(match.group(3)) if match.group(3) else 0
+            
+            # Convert everything to minutes (with decimal precision)
+            total_minutes = hours * 60 + minutes + (seconds / 60.0)
+            result = round(total_minutes, 2)  # Round to 2 decimal places
+            logger.debug(f"Parsed '{duration_str}' as {hours}h {minutes}m {seconds}s = {result} minutes")
+            return result
         
-        # If no match, try to extract any number as minutes
+        # If no match, try to extract any number as minutes (fallback)
         number_match = re.search(r'(\d+)', duration_str)
         if number_match:
-            return int(number_match.group(1))
+            result = int(number_match.group(1))
+            logger.debug(f"Fallback parsing '{duration_str}' as {result} minutes")
+            return result
         
+        logger.warning(f"Could not parse duration: '{duration_str}'")
         return 0
     
     def log_attendance(self, participants: List[Dict], 
@@ -215,9 +244,17 @@ class AttendanceProcessor:
         current_log_id = last_log_id + 1
         
         try:
+            # Log meeting duration and threshold
+            threshold_minutes = meeting_duration_minutes * 0.1
+            logger.info(f"Meeting duration: {meeting_duration_minutes}m, Attendance threshold: {threshold_minutes}m (10%)")
+            
             for participant in participants:
                 # Calculate attendance (present if >= 10% of meeting duration)
-                attendance = participant['duration_minutes'] >= (meeting_duration_minutes * 0.1)
+                duration = participant['duration_minutes']
+                attendance = duration >= threshold_minutes
+                status = 'Present' if attendance else 'Absent'
+                
+                logger.info(f"ATTENDANCE CHECK {participant['enrollment_id']}: {duration}m >= {threshold_minutes}m = {status}")
                 
                 # Insert attendance record
                 insert_data = {
@@ -240,7 +277,7 @@ class AttendanceProcessor:
                 else:
                     absent_count += 1
                 
-                logger.info(f"Logged: {participant['enrollment_id']} - {'Present' if attendance else 'Absent'}")
+                logger.info(f"Logged: {participant['enrollment_id']} - {status}")
             
             logger.info(f"Successfully logged {inserted_count} attendance records")
             return {
