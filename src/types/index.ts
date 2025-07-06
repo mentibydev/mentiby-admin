@@ -19,6 +19,18 @@ export interface OnboardingData {
   'Cohort Number': string;
 }
 
+export interface StuData {
+  enrollment_id: string;
+  name: string;
+  cohort_type: string;
+  cohort_number: string;
+  total_classes: number;
+  present_classes: number;
+  overall_attendance: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
 export interface CohortDistribution {
   cohortType: string;
   cohortNumber: string;

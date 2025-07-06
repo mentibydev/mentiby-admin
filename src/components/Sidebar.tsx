@@ -1,13 +1,13 @@
 'use client'
 
-import { Database, PieChart, Users, LogOut, User, ChevronUp, Upload, Trophy } from 'lucide-react'
+import { Database, PieChart, Users, LogOut, User, ChevronUp, Upload, Trophy, ClipboardList, MessageSquare } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 
 interface SidebarProps {
-  activeTab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp'
-  onTabChange: (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp') => void
+  activeTab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records'
+  onTabChange: (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records') => void
 }
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -52,9 +52,9 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     {
       id: 'feedback' as const,
       label: 'Mentiby Feedback',
-      icon: Trophy,
+      icon: MessageSquare,
       description: 'Students Feedback on Mentiby',
-      gradient: 'gradient-gold'
+      gradient: 'gradient-orange'
     },
     {
       id: 'charts' as const,
@@ -70,7 +70,13 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       description: 'Student XP rankings',
       gradient: 'gradient-gold'
     },
-    
+    {
+      id: 'records' as const,
+      label: 'Attendance Records',
+      icon: ClipboardList,
+      description: 'View attendance statistics by cohort',
+      gradient: 'gradient-blue'
+    },
     {
       id: 'attendance' as const,
       label: 'Attendance Upload',

@@ -7,6 +7,7 @@ import Sidebar from '@/components/Sidebar'
 import DataTable from '@/components/DataTable'
 import CohortCharts from '@/components/CohortCharts'
 import AttendanceUpload from '@/components/AttendanceUpload'
+import AttendanceRecords from '@/components/AttendanceRecords'
 import XPLeaderboard from '@/components/XPLeaderboard'
 import AuthWrapper from '@/components/auth/AuthWrapper'
 import { Menu, X } from 'lucide-react'
@@ -23,7 +24,7 @@ type FeedbackData = {
 }
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'feedback' | 'attendance' | 'xp'>('table')
+  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records'>('table')
   const [onboardingData, setOnboardingData] = useState<OnboardingData[]>([])
   const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -80,7 +81,7 @@ function AdminPanel() {
     }
   }
 
-  const handleTabChange = (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp') => {
+  const handleTabChange = (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records') => {
     setActiveTab(tab)
     setIsMobileMenuOpen(false) // Close mobile menu when tab changes
   }
@@ -123,6 +124,8 @@ function AdminPanel() {
         return <CohortCharts data={onboardingData} isLoading={isLoading} />
       case 'xp':
         return <XPLeaderboard />
+      case 'records':
+        return <AttendanceRecords />
       case 'attendance':
         return <AttendanceUpload />
       default:

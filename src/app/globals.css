@@ -96,6 +96,10 @@
   background: linear-gradient(135deg, #f59e0b, #d97706, #92400e);
 }
 
+.gradient-orange {
+  background: linear-gradient(135deg, #fb923c, #f97316, #ea580c);
+}
+
 /* Glow effects */
 .glow-purple {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
@@ -123,6 +127,10 @@
 
 .glow-bronze {
   box-shadow: 0 0 30px rgba(217, 119, 6, 0.4);
+}
+
+.glow-orange {
+  box-shadow: 0 0 30px rgba(251, 146, 60, 0.4);
 }
 
 /* Editable cell styles */

@@ -168,7 +168,9 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
               {filteredData.map((row) => (
                 <tr key={row.EnrollmentID} className="hover:bg-muted/20">
                   {Object.entries(row).map(([key, value]) => (
-                    <td key={key} className="px-4 py-3 text-sm cursor-pointer"
+                    <td key={key} className={`px-4 py-3 text-sm cursor-pointer ${
+                      key === 'EnrollmentID' ? 'text-orange-400 font-mono font-semibold' : ''
+                    }`}
                       onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, key as keyof FeedbackData, value)}>
                       {renderCell(row, key as keyof FeedbackData, value)}
                     </td>

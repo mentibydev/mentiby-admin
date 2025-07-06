@@ -225,19 +225,19 @@ export default function AttendanceUpload() {
 
           {/* Date and Teacher Name Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Date */}
+          {/* Date */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                <Calendar className="w-4 h-4 inline mr-2" />
-                Class Date
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
-              />
+            <label className="block text-sm font-medium text-gray-300 mb-2">
+              <Calendar className="w-4 h-4 inline mr-2" />
+              Class Date
+            </label>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-200"
+            />
             </div>
 
             {/* Teacher Name */}
