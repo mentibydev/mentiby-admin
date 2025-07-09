@@ -8,6 +8,9 @@ import os
 import tempfile
 import json
 import logging
+import threading
+import time
+from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from werkzeug.utils import secure_filename
@@ -31,6 +34,46 @@ MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
+# Global flags for keep-alive mechanism
+keep_alive_active = True
+keep_alive_paused = False
+
+def keep_alive_task():
+    """Background task that runs every 5 minutes to keep the backend alive"""
+    global keep_alive_active, keep_alive_paused
+    
+    while keep_alive_active:
+        # Wait for 5 minutes (300 seconds)
+        for _ in range(300):  # Check every second for pause/stop signals
+            if not keep_alive_active:
+                return
+            time.sleep(1)
+        
+        # If not paused, log current time to keep backend alive
+        if not keep_alive_paused:
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            logger.info(f"Keep-alive heartbeat: {current_time}")
+
+def start_keep_alive():
+    """Start the keep-alive background thread"""
+    global keep_alive_active
+    keep_alive_active = True
+    thread = threading.Thread(target=keep_alive_task, daemon=True)
+    thread.start()
+    logger.info("Keep-alive mechanism started - will log heartbeat every 5 minutes")
+
+def pause_keep_alive():
+    """Pause the keep-alive mechanism"""
+    global keep_alive_paused
+    keep_alive_paused = True
+    logger.info("Keep-alive mechanism paused")
+
+def resume_keep_alive():
+    """Resume the keep-alive mechanism"""
+    global keep_alive_paused
+    keep_alive_paused = False
+    logger.info("Keep-alive mechanism resumed")
+
 def allowed_file(filename):
     """Check if file extension is allowed"""
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -48,15 +91,22 @@ def health_check():
 def process_attendance():
     """Process attendance CSV file"""
     try:
+        # Pause keep-alive during CSV processing
+        pause_keep_alive()
+        logger.info("CSV processing started - keep-alive paused")
+        
         # Validate request
         if 'csv_file' not in request.files:
+            resume_keep_alive()  # Resume on error
             return jsonify({'error': 'No CSV file provided'}), 400
         
         file = request.files['csv_file']
         if file.filename == '':
+            resume_keep_alive()  # Resume on error
             return jsonify({'error': 'No file selected'}), 400
         
         if not allowed_file(file.filename):
+            resume_keep_alive()  # Resume on error
             return jsonify({'error': 'Only CSV files are allowed'}), 400
         
         # Get form parameters
@@ -68,6 +118,7 @@ def process_attendance():
         
         # Validate required parameters
         if not all([cohort_type, cohort_number, subject, class_date, teacher_name]):
+            resume_keep_alive()  # Resume on error
             return jsonify({
                 'error': 'Missing required parameters',
                 'required': ['cohort_type', 'cohort_number', 'subject', 'class_date', 'teacher_name']
@@ -77,6 +128,7 @@ def process_attendance():
         import re
         date_pattern = r'^\d{4}-\d{2}-\d{2}$'
         if not re.match(date_pattern, class_date):
+            resume_keep_alive()  # Resume on error
             return jsonify({'error': 'Date must be in YYYY-MM-DD format'}), 400
         
         # Save uploaded file temporarily
@@ -108,6 +160,12 @@ def process_attendance():
             except Exception as e:
                 logger.warning(f"Failed to clean up temporary file: {e}")
             
+            # Resume keep-alive after successful processing
+            logger.info("CSV processing completed successfully")
+            # Wait 1 minute before resuming keep-alive
+            threading.Timer(60, resume_keep_alive).start()
+            logger.info("Keep-alive will resume in 1 minute")
+            
             return jsonify({
                 'success': True,
                 'message': 'Attendance processed successfully',
@@ -122,6 +180,8 @@ def process_attendance():
                 pass
             
             logger.error(f"Processing error: {str(e)}")
+            # Resume keep-alive on error
+            resume_keep_alive()
             return jsonify({
                 'error': str(e),
                 'details': 'Failed to process attendance file'
@@ -129,6 +189,8 @@ def process_attendance():
         
     except Exception as e:
         logger.error(f"Request handling error: {str(e)}")
+        # Resume keep-alive on error
+        resume_keep_alive()
         return jsonify({
             'error': 'Internal server error',
             'details': str(e)
@@ -187,6 +249,9 @@ def internal_server_error(error):
     }), 500
 
 if __name__ == '__main__':
+    # Start the keep-alive mechanism
+    start_keep_alive()
+    
     # Get port from environment variable or default to 5000
     port = int(os.environ.get('PORT', 5000))
     debug = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
