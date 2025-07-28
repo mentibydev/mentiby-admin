@@ -192,6 +192,22 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
     return <span className="block truncate">{value || '-'}</span>
   }
 
+  // Export data function with consistent quoting and escaping as specified
+  const exportData = () => {
+    if (!filteredData.length) return
+    const headers = Object.keys(filteredData[0]).join(',')
+    const rows = filteredData.map(row =>
+      Object.values(row).map(val => `"${String(val || '').replace(/"/g, '""')}"`).join(',')
+    )
+    const csvContent = [headers, ...rows].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'mentiby-feedback.csv'
+    link.click()
+  }
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -237,6 +253,12 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
               Delete ({selectedRows.size})
             </button>
           )}
+          <button
+            onClick={exportData}
+            className="px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium bg-blue-500 text-white hover:bg-blue-600 transition-all duration-300"
+          >
+            Export CSV
+          </button>
         </div>
         {showFilters && (
           <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 mt-2">
