@@ -13,7 +13,7 @@ const supabase = createClient(
 // Rate limiting state
 let lastFetchTime = 0
 const RATE_LIMIT_DELAY = 5 * 60 * 1000 // 5 minutes in milliseconds
-const REQUEST_DELAY = 500 // 0.5 seconds to avoid Codedamn API rate limits
+const REQUEST_DELAY = 200 // 0.2 seconds to avoid Codedamn API rate limits
 
 export async function GET(request: NextRequest) {
   try {
@@ -50,7 +50,9 @@ export async function GET(request: NextRequest) {
       success: 0,
       failed: 0,
       rateLimited: 0,
-      errors: [] as string[]
+      errors: [] as string[],
+      processed: 0,
+      remaining: users.length
     }
 
     const startTime = Date.now()
@@ -135,6 +137,15 @@ export async function GET(request: NextRequest) {
 
         console.log(`Successfully updated XP for ${user.Email}: ${xp}`)
         results.success++
+        results.processed++
+        results.remaining--
+
+        // Check if we're approaching timeout (leave 30 seconds buffer)
+        const elapsed = (Date.now() - startTime) / 1000
+        if (elapsed > 270) { // 4.5 minutes
+          console.log(`Approaching timeout, processed ${results.processed}/${users.length} users`)
+          break
+        }
 
         // Add delay between requests to avoid rate limiting
         if (i < users.length - 1) {
@@ -144,6 +155,8 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error(`Error processing ${user.Email}:`, error)
         results.failed++
+        results.processed++
+        results.remaining--
         
         // Handle abort timeout
         if (error instanceof Error && error.name === 'AbortError') {
@@ -168,6 +181,13 @@ export async function GET(request: NextRequest) {
           results.rateLimited++
           await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY))
         }
+
+        // Check timeout after error handling too
+        const elapsed = (Date.now() - startTime) / 1000
+        if (elapsed > 270) { // 4.5 minutes
+          console.log(`Approaching timeout after error, processed ${results.processed}/${users.length} users`)
+          break
+        }
       }
     }
 
@@ -180,7 +200,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'XP update completed',
+      message: results.remaining > 0 ? 'XP update partially completed (timeout)' : 'XP update completed',
       results,
       executionTimeSeconds: executionTime,
       timestamp: new Date().toISOString()
