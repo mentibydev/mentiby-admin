@@ -66,7 +66,8 @@ function AdminPanel() {
       const { data: feedbackData, error } = await supabase
         .from('mentibyFeedback')
         .select('*')
-        .order('EnrollmentID', { ascending: true })
+        .order('Overall Mentiby Rating', { ascending: true })
+        .order('Mentor Teaching Style Rating', { ascending: true })
 
       if (error) {
         throw error

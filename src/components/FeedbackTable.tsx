@@ -12,6 +12,8 @@ export interface FeedbackData {
   OverallFeedback: string
   ChallengesFaced: string
   SuggestionsToImprove: string
+  OverallMentibyRating?: number
+  OverallMentorRating?: number
 }
 
 interface FeedbackTableProps {
@@ -31,8 +33,21 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
   console.log('FeedbackTable rendered with data:', data)
   const [filteredData, setFilteredData] = useState<FeedbackData[]>([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [filters, setFilters] = useState<{ cohort: string; batch: string }>({
+    cohort: '',
+    batch: ''
+  })
+  const [showFilters, setShowFilters] = useState(false)
   const [editingCell, setEditingCell] = useState<EditingCell | null>(null)
   const [isSaving, setIsSaving] = useState(false)
+  // Expanded cell state for universal cell expansion
+  const [expandedCell, setExpandedCell] = useState<{ rowId: string; field: string } | null>(null)
+
+  // Selection and delete mode state
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
+  const [showDeleteMode, setShowDeleteMode] = useState(false)
+
+
 
   // Sorting function for EnrollmentID
   const sortByEnrollmentId = (a: FeedbackData, b: FeedbackData) => {
@@ -48,7 +63,20 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
 
   useEffect(() => {
     let filtered = [...data]
-    filtered.sort(sortByEnrollmentId)
+
+    // Apply filters
+    if (filters.cohort) {
+      const inputValue = filters.cohort.trim().toLowerCase()
+      filtered = filtered.filter(item => {
+        const itemCohort = (item as any).Cohort?.toString().trim().toLowerCase()
+        return itemCohort === inputValue || parseFloat(itemCohort) === parseFloat(inputValue)
+      })
+    }
+    if (filters.batch) {
+      const batchValue = filters.batch.toString().toLowerCase()
+      filtered = filtered.filter(item => (item as any).Batch?.toString().toLowerCase().includes(batchValue))
+    }
+    // Apply search
     if (searchTerm) {
       filtered = filtered.filter(item =>
         Object.values(item).some(value =>
@@ -56,8 +84,51 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
         )
       )
     }
+
+    // No manual sort by OverallMentibyRating and OverallMentorRating needed, as data is pre-sorted from Supabase query
+
     setFilteredData(filtered)
-  }, [data, searchTerm])
+    // If delete mode is active, update selectedRows to remove any rows no longer present
+    if (showDeleteMode) {
+      setSelectedRows(prev => {
+        const newSet = new Set(
+          Array.from(prev).filter(id => filtered.some(row => row.EnrollmentID === id))
+        )
+        return newSet
+      })
+    }
+  }, [data, searchTerm, filters, showDeleteMode])
+  // Selection handlers
+  const handleRowSelect = (id: string, isSelected: boolean) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev)
+      if (isSelected) newSet.add(id)
+      else newSet.delete(id)
+      return newSet
+    })
+  }
+
+  const handleSelectAll = (isSelected: boolean) => {
+    if (isSelected) setSelectedRows(new Set(filteredData.map(row => row.EnrollmentID)))
+    else setSelectedRows(new Set())
+  }
+
+  const handleDeleteRows = async () => {
+    if (selectedRows.size === 0) return
+    const confirmed = confirm(`Delete ${selectedRows.size} selected record(s)?`)
+    if (!confirmed) return
+    try {
+      const { error } = await supabase
+        .from('mentibyFeedback')
+        .delete()
+        .in('EnrollmentID', Array.from(selectedRows))
+      if (error) throw error
+      setSelectedRows(new Set())
+      onDataUpdate()
+    } catch (error) {
+      console.error('Delete failed:', error)
+    }
+  }
 
   const handleCellDoubleClick = (rowId: string, field: keyof FeedbackData, value: any) => {
     setEditingCell({
@@ -118,7 +189,7 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
         </div>
       )
     }
-    return <span className="truncate">{value || '-'}</span>
+    return <span className="block truncate">{value || '-'}</span>
   }
 
   if (isLoading) {
@@ -136,6 +207,64 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
         <p className="text-muted-foreground mt-1 text-sm">
           Showing {filteredData.length} of {data.length} feedback records
         </p>
+        <div className="flex gap-2 mt-4">
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 ${
+              showFilters
+                ? "gradient-green text-white shadow-lg glow-green"
+                : "gradient-purple text-white shadow-lg glow-purple"
+            }`}
+          >
+            Filters
+          </button>
+          <button
+            onClick={() => {
+              setShowDeleteMode(!showDeleteMode)
+              if (!showDeleteMode) setSelectedRows(new Set())
+            }}
+            className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 ${
+              showDeleteMode ? "gradient-red text-white shadow-lg glow-red" : "bg-muted/50 hover:bg-muted/70 text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Delete
+          </button>
+          {showDeleteMode && selectedRows.size > 0 && (
+            <button
+              onClick={handleDeleteRows}
+              className="px-3 py-2 sm:px-4 sm:py-2 gradient-red text-white rounded-lg text-xs sm:text-sm font-medium hover:scale-105 glow-red"
+            >
+              Delete ({selectedRows.size})
+            </button>
+          )}
+        </div>
+        {showFilters && (
+          <div className="bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 space-y-4 mt-2">
+            <h3 className="text-lg font-semibold gradient-text">Filters</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Cohort</label>
+                <input
+                  type="text"
+                  placeholder="e.g., 1, 2 or 3.0"
+                  value={filters.cohort}
+                  onChange={(e) => setFilters(prev => ({ ...prev, cohort: e.target.value }))}
+                  className="w-full px-4 py-3 bg-input/50 backdrop-blur-sm border border-border/50 rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Batch</label>
+                <input
+                  type="text"
+                  placeholder="e.g., Basic or Placement"
+                  value={filters.batch}
+                  onChange={(e) => setFilters(prev => ({ ...prev, batch: e.target.value }))}
+                  className="w-full px-4 py-3 bg-input/50 backdrop-blur-sm border border-border/50 rounded-xl text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex-1 bg-card/50 backdrop-blur-xl border border-border/50 rounded-xl sm:rounded-2xl overflow-hidden">
@@ -143,9 +272,18 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
           <table className="w-full table-auto">
             <thead className="bg-muted/30 sticky top-0 z-10">
               <tr>
+                {showDeleteMode && (
+                  <th className="px-2 py-3 text-left text-sm font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={selectedRows.size === filteredData.length && filteredData.length > 0}
+                      onChange={(e) => handleSelectAll(e.target.checked)}
+                    />
+                  </th>
+                )}
                 {[
                   { key: 'EnrollmentID', label: 'Enrollment ID' },
-                  { key: 'FullName', label: 'Full Name' },
+                  { key: 'FullName', label: 'Student Name' },
                   { key: 'Mentor1Name', label: 'Mentor 1 Name' },
                   { key: 'Mentor2Name', label: 'Mentor 2 Name' },
                   { key: 'Batch', label: 'Batch' },
@@ -158,7 +296,10 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
                   { key: 'OverallMentibyRating', label: 'Overall Mentiby Rating' },
                   { key: 'OverallMentorRating', label: 'Overall Teaching Style Rating' },
                 ].map((field) => (
-                  <th key={field.key} className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap">
+                  <th
+                    key={field.key}
+                    className="px-4 py-3 text-left text-sm font-semibold whitespace-nowrap"
+                  >
                     {field.label}
                   </th>
                 ))}
@@ -167,11 +308,36 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
             <tbody className="divide-y divide-border/30">
               {filteredData.map((row) => (
                 <tr key={row.EnrollmentID} className="hover:bg-muted/20">
+                  {showDeleteMode && (
+                    <td className="px-2 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedRows.has(row.EnrollmentID)}
+                        onChange={(e) => handleRowSelect(row.EnrollmentID, e.target.checked)}
+                      />
+                    </td>
+                  )}
                   {Object.entries(row).map(([key, value]) => (
-                    <td key={key} className={`px-4 py-3 text-sm cursor-pointer ${key === 'EnrollmentID' ? 'text-orange-400 font-mono font-semibold' : ''
-                      }`}
-                      onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, key as keyof FeedbackData, value)}>
-                      {renderCell(row, key as keyof FeedbackData, value)}
+                    <td
+                      key={key}
+                      className={`px-4 py-3 text-sm max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap ${
+                        key === 'EnrollmentID' ? 'text-orange-400 font-mono font-semibold' : ''
+                      } cursor-pointer`}
+                      title={String(value || '')}
+                      onClick={() =>
+                        setExpandedCell(
+                          expandedCell?.rowId === row.EnrollmentID && expandedCell?.field === key
+                            ? null
+                            : { rowId: row.EnrollmentID, field: key }
+                        )
+                      }
+                      onDoubleClick={() => handleCellDoubleClick(row.EnrollmentID, key as keyof FeedbackData, value)}
+                    >
+                      {expandedCell?.rowId === row.EnrollmentID && expandedCell?.field === key ? (
+                        <div className="p-2 bg-muted/30 rounded whitespace-pre-wrap">{value || '-'}</div>
+                      ) : (
+                        renderCell(row, key as keyof FeedbackData, value)
+                      )}
                     </td>
                   ))}
                 </tr>
