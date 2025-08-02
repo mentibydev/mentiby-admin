@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
     }
 
     const isRetry = startFrom > 0
+    console.log(`🔍 DEBUG: startFrom parameter = "${searchParams.get('startFrom')}", parsed = ${startFrom}`)
     console.log(isVercelCron ? 'Starting XP update (Vercel Cron)...' : 
                isRetry ? `Starting XP update (Auto-retry from user ${startFrom + 1})...` : 
                'Starting XP update (Manual)...')
@@ -51,6 +52,10 @@ export async function GET(request: NextRequest) {
     const totalUsers = users.length
     const usersToProcess = users.slice(startFrom) // Start from specified index
     console.log(`Found ${totalUsers} total users, processing ${usersToProcess.length} users (starting from user ${startFrom + 1})`)
+    console.log(`🔍 DEBUG: users.slice(${startFrom}) = ${usersToProcess.length} users`)
+    if (startFrom > 0 && usersToProcess.length > 0) {
+      console.log(`🔍 DEBUG: First user to process: ${usersToProcess[0].Email}`)
+    }
 
     const results = {
       success: 0,
@@ -230,27 +235,17 @@ export async function GET(request: NextRequest) {
     
     if (needsRetry) {
       const nextStartIndex = results.processed
-      const retryUrl = `${request.nextUrl.origin}/api/update-xp?secret=${secret}&startFrom=${nextStartIndex}`
       
-      console.log(`📅 Auto-retry scheduled in ${retryDelay / 1000} seconds for remaining ${results.remaining} users (starting from user ${nextStartIndex + 1})`)
-      
-      // Schedule retry using setTimeout (this will run in background)
-      setTimeout(async () => {
-        try {
-          console.log(`🔄 Auto-retry triggered: ${retryUrl}`)
-          await fetch(retryUrl)
-        } catch (error) {
-          console.error('Auto-retry failed:', error)
-        }
-      }, retryDelay)
+      console.log(`📅 Manual retry needed for remaining ${results.remaining} users (starting from user ${nextStartIndex + 1})`)
+      console.log(`🔗 Retry URL: ${request.nextUrl.origin}/api/update-xp?secret=${secret}&startFrom=${nextStartIndex}`)
       
       retryScheduled = true
     }
 
     const message = hasRemainingUsers 
       ? results.rateLimitReached 
-        ? `XP update paused due to rate limit. Auto-retry scheduled in ${retryDelay / 60000} minutes.`
-        : `XP update partially completed. Auto-retry scheduled in ${retryDelay / 60000} minutes.`
+        ? `XP update paused due to rate limit. Processed ${results.processed}/${totalUsers} users. Auto-retry will continue from user ${results.processed + 1}.`
+        : `XP update partially completed. Processed ${results.processed}/${totalUsers} users. Auto-retry will continue from user ${results.processed + 1}.`
       : 'XP update completed successfully'
 
     return NextResponse.json({

@@ -36,6 +36,7 @@ export default function XPLeaderboard() {
     processed: number
     remaining: number
     total: number
+    countdownSeconds: number
   } | null>(null)
 
   const cohortTypes = ['Basic', 'Placement', 'MERN', 'Full Stack']
@@ -166,18 +167,59 @@ export default function XPLeaderboard() {
 
         // Handle auto-retry status
         if (result.autoRetry && result.autoRetry.scheduled) {
+          const delayMs = result.autoRetry.delayMinutes * 60 * 1000
+          
           setAutoRetryStatus({
             active: true,
             nextRetryMinutes: result.autoRetry.delayMinutes,
             processed: result.results.processed,
             remaining: result.autoRetry.remainingUsers,
-            total: result.results.totalUsers
+            total: result.results.totalUsers,
+            countdownSeconds: result.autoRetry.delayMinutes * 60
           })
           
-          // Clear auto-retry status after the retry delay
-          setTimeout(() => {
-            setAutoRetryStatus(null)
-          }, result.autoRetry.delayMinutes * 60 * 1000)
+          // Auto-trigger retry after delay
+          console.log(`🔗 Auto-retry URL will be: /api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${result.autoRetry.nextStartIndex}`)
+          
+          setTimeout(async () => {
+            console.log(`🔄 Auto-retry triggered for remaining ${result.autoRetry.remainingUsers} users from index ${result.autoRetry.nextStartIndex}`)
+            try {
+              setRefreshing(true)
+              setAutoRetryStatus(null) // Clear status during retry
+              
+              const retryUrl = `/api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${result.autoRetry.nextStartIndex}`
+              console.log(`🌐 Fetching: ${retryUrl}`)
+              
+              const retryResponse = await fetch(retryUrl)
+              
+              if (retryResponse.ok) {
+                const retryResult = await retryResponse.json()
+                console.log('Auto-retry completed:', retryResult)
+                
+                // Update progress
+                setUpdateProgress({ 
+                  current: retryResult.results.processed, 
+                  total: retryResult.results.totalUsers 
+                })
+                
+                // Refresh leaderboard
+                await fetchLeaderboard(false)
+                setLastUpdated(new Date().toLocaleString())
+                
+                // If there are still remaining users, show manual option
+                if (retryResult.results.remaining > 0) {
+                  setError(`Processed ${retryResult.results.processed}/${retryResult.results.totalUsers} users. ${retryResult.results.remaining} remaining. Click Refresh XP again to continue.`)
+                }
+              } else {
+                throw new Error(`Auto-retry failed with status ${retryResponse.status}`)
+              }
+            } catch (error) {
+              console.error('Auto-retry failed:', error)
+              setError('Auto-retry failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            } finally {
+              setRefreshing(false)
+            }
+          }, delayMs)
         } else {
           setAutoRetryStatus(null)
         }
@@ -304,7 +346,7 @@ export default function XPLeaderboard() {
             <div className="flex items-center gap-2 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800">
               <RefreshCw className="w-3 h-3 animate-spin" />
               <span>
-                Auto-retry in {Math.ceil(autoRetryStatus.nextRetryMinutes)}min ({autoRetryStatus.processed}/{autoRetryStatus.total} users)
+                Auto-retry in {Math.ceil(autoRetryStatus.countdownSeconds / 60)}min ({autoRetryStatus.processed}/{autoRetryStatus.total} users, {autoRetryStatus.remaining} remaining)
               </span>
             </div>
           )}
