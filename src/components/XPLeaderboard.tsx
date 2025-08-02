@@ -187,7 +187,14 @@ export default function XPLeaderboard() {
               setRefreshing(true)
               setAutoRetryStatus(null) // Clear status during retry
               
-              const retryUrl = `/api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${result.autoRetry.nextStartIndex}`
+              const nextIndex = result.autoRetry.nextStartIndex
+              console.log(`🔍 DEBUG: nextStartIndex = ${nextIndex} (type: ${typeof nextIndex})`)
+              
+              if (nextIndex === null || nextIndex === undefined || isNaN(nextIndex)) {
+                throw new Error(`Invalid nextStartIndex: ${nextIndex}`)
+              }
+              
+              const retryUrl = `/api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${nextIndex}`
               console.log(`🌐 Fetching: ${retryUrl}`)
               
               const retryResponse = await fetch(retryUrl)

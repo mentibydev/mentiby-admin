@@ -22,7 +22,15 @@ export async function GET(request: NextRequest) {
     const secret = searchParams.get('secret')
     const userAgent = request.headers.get('user-agent') || ''
     const isVercelCron = userAgent.includes('vercel-cron')
-    const startFrom = parseInt(searchParams.get('startFrom') || '0') // For auto-retry
+    const startFromParam = searchParams.get('startFrom')
+    let startFrom = 0
+    
+    if (startFromParam && startFromParam !== 'null' && startFromParam !== 'undefined') {
+      const parsed = parseInt(startFromParam)
+      if (!isNaN(parsed) && parsed >= 0) {
+        startFrom = parsed
+      }
+    }
 
     // Allow if it's a Vercel cron request OR if secret matches
     if (!isVercelCron && secret !== process.env.CRON_SECRET) {
@@ -30,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     const isRetry = startFrom > 0
-    console.log(`🔍 DEBUG: startFrom parameter = "${searchParams.get('startFrom')}", parsed = ${startFrom}`)
+    console.log(`🔍 DEBUG: Raw startFrom = "${startFromParam}", parsed = ${startFrom}, isNaN = ${isNaN(startFrom)}`)
     console.log(isVercelCron ? 'Starting XP update (Vercel Cron)...' : 
                isRetry ? `Starting XP update (Auto-retry from user ${startFrom + 1})...` : 
                'Starting XP update (Manual)...')
@@ -236,8 +244,9 @@ export async function GET(request: NextRequest) {
     if (needsRetry) {
       const nextStartIndex = results.processed
       
-      console.log(`📅 Manual retry needed for remaining ${results.remaining} users (starting from user ${nextStartIndex + 1})`)
+      console.log(`📅 Auto-retry needed for remaining ${results.remaining} users (starting from user ${nextStartIndex + 1})`)
       console.log(`🔗 Retry URL: ${request.nextUrl.origin}/api/update-xp?secret=${secret}&startFrom=${nextStartIndex}`)
+      console.log(`🔍 DEBUG: nextStartIndex = ${nextStartIndex} (type: ${typeof nextStartIndex})`)
       
       retryScheduled = true
     }
@@ -257,7 +266,7 @@ export async function GET(request: NextRequest) {
       autoRetry: {
         scheduled: retryScheduled,
         delayMinutes: retryDelay / 60000,
-        nextStartIndex: needsRetry ? results.processed : null,
+        nextStartIndex: needsRetry && results.processed !== undefined ? results.processed : null,
         remainingUsers: results.remaining
       }
     })
