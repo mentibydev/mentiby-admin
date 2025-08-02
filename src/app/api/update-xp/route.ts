@@ -13,7 +13,7 @@ const supabase = createClient(
 // Rate limiting state
 let lastFetchTime = 0
 const RATE_LIMIT_DELAY = 5 * 60 * 1000 // 5 minutes in milliseconds
-const REQUEST_DELAY = 200 // 0.2 seconds to avoid Codedamn API rate limits
+const REQUEST_DELAY = 1000 // 1 second to avoid Codedamn API rate limits
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,13 +22,17 @@ export async function GET(request: NextRequest) {
     const secret = searchParams.get('secret')
     const userAgent = request.headers.get('user-agent') || ''
     const isVercelCron = userAgent.includes('vercel-cron')
+    const startFrom = parseInt(searchParams.get('startFrom') || '0') // For auto-retry
 
     // Allow if it's a Vercel cron request OR if secret matches
     if (!isVercelCron && secret !== process.env.CRON_SECRET) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log(isVercelCron ? 'Starting XP update (Vercel Cron)...' : 'Starting XP update (Manual)...')
+    const isRetry = startFrom > 0
+    console.log(isVercelCron ? 'Starting XP update (Vercel Cron)...' : 
+               isRetry ? `Starting XP update (Auto-retry from user ${startFrom + 1})...` : 
+               'Starting XP update (Manual)...')
 
     // Fetch all users from onboarding table
     const { data: users, error: usersError } = await supabase
@@ -44,27 +48,33 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'No users found' }, { status: 200 })
     }
 
-    console.log(`Found ${users.length} users to update`)
+    const totalUsers = users.length
+    const usersToProcess = users.slice(startFrom) // Start from specified index
+    console.log(`Found ${totalUsers} total users, processing ${usersToProcess.length} users (starting from user ${startFrom + 1})`)
 
     const results = {
       success: 0,
       failed: 0,
       rateLimited: 0,
       errors: [] as string[],
-      processed: 0,
-      remaining: users.length
+      processed: startFrom, // Start from previous progress
+      remaining: totalUsers - startFrom,
+      totalUsers,
+      startedFrom: startFrom,
+      rateLimitReached: false
     }
 
     const startTime = Date.now()
 
     // Process users with rate limiting
-    for (let i = 0; i < users.length; i++) {
-      const user = users[i]
+    for (let i = 0; i < usersToProcess.length; i++) {
+      const user = usersToProcess[i]
+      const globalIndex = startFrom + i // Global user index
 
       try {
         // Log progress every 10 users and first/last user
-        if (i % 10 === 0 || i === users.length - 1) {
-          console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
+        if (i % 10 === 0 || i === usersToProcess.length - 1) {
+          console.log(`Processing user ${globalIndex + 1}/${totalUsers}: ${user.Email}`)
         }
 
         // Fetch XP from Codedamn API with timeout
@@ -101,9 +111,22 @@ export async function GET(request: NextRequest) {
         const xpData: CodedamnXPResponse[] = await xpResponse.json()
 
         if (!xpData || !xpData[0] || xpData[0].output.status !== 'ok') {
-          console.warn(`No XP data for ${user.Email}:`, xpData?.[0]?.output?.errorMessage || 'User not found on Codedamn')
+          const errorMessage = xpData?.[0]?.output?.errorMessage || 'User not found on Codedamn'
+          
+          // Check for rate limit error
+          if (errorMessage.includes('Too many requests') || errorMessage.includes('rate limit')) {
+            console.log(`🚨 Rate limit detected at user ${globalIndex + 1}/${totalUsers}. Exiting gracefully to cool down.`)
+            results.rateLimited++
+            results.rateLimitReached = true
+            results.errors.push(`Rate limit reached at user ${globalIndex + 1}. Processed ${results.processed}/${totalUsers} users.`)
+            break // Exit immediately to allow cooldown
+          }
+          
+          console.warn(`No XP data for ${user.Email}:`, errorMessage)
           // Skip this user - don't count as failed since they might not have a Codedamn account
           console.log(`Skipping ${user.Email} - no Codedamn account or XP data`)
+          results.processed++
+          results.remaining--
           continue
         }
 
@@ -143,12 +166,12 @@ export async function GET(request: NextRequest) {
         // Check if we're approaching timeout (leave 30 seconds buffer)
         const elapsed = (Date.now() - startTime) / 1000
         if (elapsed > 270) { // 4.5 minutes
-          console.log(`Approaching timeout, processed ${results.processed}/${users.length} users`)
+          console.log(`Approaching timeout, processed ${results.processed}/${totalUsers} users`)
           break
         }
 
         // Add delay between requests to avoid rate limiting
-        if (i < users.length - 1) {
+        if (i < usersToProcess.length - 1) {
           await new Promise(resolve => setTimeout(resolve, REQUEST_DELAY))
         }
 
@@ -185,7 +208,7 @@ export async function GET(request: NextRequest) {
         // Check timeout after error handling too
         const elapsed = (Date.now() - startTime) / 1000
         if (elapsed > 270) { // 4.5 minutes
-          console.log(`Approaching timeout after error, processed ${results.processed}/${users.length} users`)
+          console.log(`Approaching timeout after error, processed ${results.processed}/${totalUsers} users`)
           break
         }
       }
@@ -198,12 +221,50 @@ export async function GET(request: NextRequest) {
 
     console.log(`XP update process completed in ${executionTime}s:`, results)
 
+    const hasRemainingUsers = results.remaining > 0
+    const needsRetry = hasRemainingUsers && (results.rateLimitReached || results.processed < totalUsers)
+    
+    // Schedule auto-retry if needed (5-minute cooldown for rate limits, 1 minute for timeouts)
+    const retryDelay = results.rateLimitReached ? 5 * 60 * 1000 : 60 * 1000 // 5 min or 1 min
+    let retryScheduled = false
+    
+    if (needsRetry) {
+      const nextStartIndex = results.processed
+      const retryUrl = `${request.nextUrl.origin}/api/update-xp?secret=${secret}&startFrom=${nextStartIndex}`
+      
+      console.log(`📅 Auto-retry scheduled in ${retryDelay / 1000} seconds for remaining ${results.remaining} users (starting from user ${nextStartIndex + 1})`)
+      
+      // Schedule retry using setTimeout (this will run in background)
+      setTimeout(async () => {
+        try {
+          console.log(`🔄 Auto-retry triggered: ${retryUrl}`)
+          await fetch(retryUrl)
+        } catch (error) {
+          console.error('Auto-retry failed:', error)
+        }
+      }, retryDelay)
+      
+      retryScheduled = true
+    }
+
+    const message = hasRemainingUsers 
+      ? results.rateLimitReached 
+        ? `XP update paused due to rate limit. Auto-retry scheduled in ${retryDelay / 60000} minutes.`
+        : `XP update partially completed. Auto-retry scheduled in ${retryDelay / 60000} minutes.`
+      : 'XP update completed successfully'
+
     return NextResponse.json({
       success: true,
-      message: results.remaining > 0 ? 'XP update partially completed (timeout)' : 'XP update completed',
+      message,
       results,
       executionTimeSeconds: executionTime,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      autoRetry: {
+        scheduled: retryScheduled,
+        delayMinutes: retryDelay / 60000,
+        nextStartIndex: needsRetry ? results.processed : null,
+        remainingUsers: results.remaining
+      }
     })
 
   } catch (error) {
