@@ -13,7 +13,7 @@ const supabase = createClient(
 // Rate limiting state
 let lastFetchTime = 0
 const RATE_LIMIT_DELAY = 5 * 60 * 1000 // 5 minutes in milliseconds
-const REQUEST_DELAY = 1500 // 1.5 seconds to avoid Codedamn API rate limits
+const REQUEST_DELAY = 500 // 0.5 seconds to avoid Codedamn API rate limits
 
 export async function GET(request: NextRequest) {
   try {
@@ -65,7 +65,10 @@ export async function GET(request: NextRequest) {
           console.log(`Processing user ${i + 1}/${users.length}: ${user.Email}`)
         }
 
-        // Fetch XP from Codedamn API
+        // Fetch XP from Codedamn API with timeout
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
         const xpResponse = await fetch('https://backend.codedamn.com/api/public/get-user-xp', {
           method: 'POST',
           headers: {
@@ -81,11 +84,16 @@ export async function GET(request: NextRequest) {
                 }
               }
             }]
-          })
+          }),
+          signal: controller.signal
         })
+        
+        clearTimeout(timeout)
 
         if (!xpResponse.ok) {
-          throw new Error(`HTTP error! status: ${xpResponse.status}`)
+          const errorText = await xpResponse.text()
+          console.error(`Codedamn API error for ${user.Email}: ${xpResponse.status} - ${errorText}`)
+          throw new Error(`HTTP error! status: ${xpResponse.status} - ${errorText}`)
         }
 
         const xpData: CodedamnXPResponse[] = await xpResponse.json()
@@ -136,6 +144,22 @@ export async function GET(request: NextRequest) {
       } catch (error) {
         console.error(`Error processing ${user.Email}:`, error)
         results.failed++
+        
+        // Handle abort timeout
+        if (error instanceof Error && error.name === 'AbortError') {
+          results.errors.push(`${user.Email}: Request timeout (30s)`)
+          console.log('Request timeout detected, continuing with next user...')
+          continue
+        }
+        
+        // Handle 529 errors specifically
+        if (error instanceof Error && error.message.includes('529')) {
+          results.errors.push(`${user.Email}: Codedamn API 529 error`)
+          console.log('529 error detected, waiting 2 minutes before continuing...')
+          await new Promise(resolve => setTimeout(resolve, 120000)) // 2 minutes
+          continue
+        }
+        
         results.errors.push(`${user.Email}: ${error instanceof Error ? error.message : 'Unknown error'}`)
 
         // If it's a rate limit error, wait longer
