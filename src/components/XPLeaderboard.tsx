@@ -30,6 +30,14 @@ export default function XPLeaderboard() {
   const [lastUpdated, setLastUpdated] = useState<string>('')
   const [error, setError] = useState<string>('')
   const [updateProgress, setUpdateProgress] = useState({ current: 0, total: 0 })
+  const [autoRetryStatus, setAutoRetryStatus] = useState<{
+    active: boolean
+    nextRetryMinutes: number
+    processed: number
+    remaining: number
+    total: number
+    countdownSeconds: number
+  } | null>(null)
 
   const cohortTypes = ['Basic', 'Placement', 'MERN', 'Full Stack']
 
@@ -151,9 +159,87 @@ export default function XPLeaderboard() {
       const result = await response.json()
 
       if (result.success) {
+        // Update progress display
+        setUpdateProgress({ 
+          current: result.results.processed, 
+          total: result.results.totalUsers 
+        })
+
+        // Handle auto-retry status
+        if (result.autoRetry && result.autoRetry.scheduled) {
+          const delayMs = result.autoRetry.delayMinutes * 60 * 1000
+          
+          setAutoRetryStatus({
+            active: true,
+            nextRetryMinutes: result.autoRetry.delayMinutes,
+            processed: result.results.processed,
+            remaining: result.autoRetry.remainingUsers,
+            total: result.results.totalUsers,
+            countdownSeconds: result.autoRetry.delayMinutes * 60
+          })
+          
+          // Auto-trigger retry after delay
+          console.log(`🔗 Auto-retry URL will be: /api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${result.autoRetry.nextStartIndex}`)
+          
+          setTimeout(async () => {
+            console.log(`🔄 Auto-retry triggered for remaining ${result.autoRetry.remainingUsers} users from index ${result.autoRetry.nextStartIndex}`)
+            try {
+              setRefreshing(true)
+              setAutoRetryStatus(null) // Clear status during retry
+              
+              const nextIndex = result.autoRetry.nextStartIndex
+              console.log(`🔍 DEBUG: nextStartIndex = ${nextIndex} (type: ${typeof nextIndex})`)
+              
+              if (nextIndex === null || nextIndex === undefined || isNaN(nextIndex)) {
+                throw new Error(`Invalid nextStartIndex: ${nextIndex}`)
+              }
+              
+              const retryUrl = `/api/update-xp?secret=mb_xp_update_secret_2025&startFrom=${nextIndex}`
+              console.log(`🌐 Fetching: ${retryUrl}`)
+              
+              const retryResponse = await fetch(retryUrl)
+              
+              if (retryResponse.ok) {
+                const retryResult = await retryResponse.json()
+                console.log('Auto-retry completed:', retryResult)
+                
+                // Update progress
+                setUpdateProgress({ 
+                  current: retryResult.results.processed, 
+                  total: retryResult.results.totalUsers 
+                })
+                
+                // Refresh leaderboard
+                await fetchLeaderboard(false)
+                setLastUpdated(new Date().toLocaleString())
+                
+                // If there are still remaining users, show manual option
+                if (retryResult.results.remaining > 0) {
+                  setError(`Processed ${retryResult.results.processed}/${retryResult.results.totalUsers} users. ${retryResult.results.remaining} remaining. Click Refresh XP again to continue.`)
+                }
+              } else {
+                throw new Error(`Auto-retry failed with status ${retryResponse.status}`)
+              }
+            } catch (error) {
+              console.error('Auto-retry failed:', error)
+              setError('Auto-retry failed: ' + (error instanceof Error ? error.message : 'Unknown error'))
+            } finally {
+              setRefreshing(false)
+            }
+          }, delayMs)
+        } else {
+          setAutoRetryStatus(null)
+        }
+
         // Refresh leaderboard after update
         await fetchLeaderboard(false)
         setLastUpdated(new Date().toLocaleString())
+        
+        // Show success message with progress info
+        if (result.results.remaining > 0) {
+          setError('') // Clear any previous errors
+          console.log(result.message)
+        }
       } else {
         throw new Error(result.error || 'XP update failed')
       }
@@ -261,6 +347,25 @@ export default function XPLeaderboard() {
               <span>Updated: {lastUpdated}</span>
             </div>
           )}
+          
+          {/* Auto-retry Status */}
+          {autoRetryStatus && (
+            <div className="flex items-center gap-2 text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 px-3 py-1 rounded-full border border-amber-200 dark:border-amber-800">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              <span>
+                Auto-retry in {Math.ceil(autoRetryStatus.countdownSeconds / 60)}min ({autoRetryStatus.processed}/{autoRetryStatus.total} users, {autoRetryStatus.remaining} remaining)
+              </span>
+            </div>
+          )}
+
+          {/* Progress Display */}
+          {updateProgress.total > 0 && updateProgress.current < updateProgress.total && !refreshing && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Users className="w-4 h-4" />
+              <span>Progress: {updateProgress.current}/{updateProgress.total} users</span>
+            </div>
+          )}
+          
           <div className="flex gap-2">
             <button
               onClick={() => setShowFilters(!showFilters)}
@@ -284,11 +389,18 @@ export default function XPLeaderboard() {
             </button>
             <button
               onClick={updateXPData}
-              disabled={refreshing || loading}
+              disabled={refreshing || loading || autoRetryStatus?.active}
               className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white rounded-lg transition-colors font-medium"
             >
-              <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
-              {refreshing ? 'Updating...' : 'Refresh XP'}
+              <RefreshCw className={cn("w-4 h-4", (refreshing || autoRetryStatus?.active) && "animate-spin")} />
+              {refreshing 
+                ? updateProgress.total > 0 
+                  ? `Updating... (${updateProgress.current}/${updateProgress.total})`
+                  : 'Updating...'
+                : autoRetryStatus?.active 
+                  ? 'Auto-retry scheduled'
+                  : 'Refresh XP'
+              }
             </button>
           </div>
         </div>

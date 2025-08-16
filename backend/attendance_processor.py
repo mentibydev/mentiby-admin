@@ -32,24 +32,13 @@ class AttendanceProcessor:
         if not self.supabase_url or not self.supabase_service_key:
             raise ValueError("Missing Supabase credentials. Need NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY")
         
-        # Initialize Supabase client with explicit options to avoid proxy issues
+        # Initialize Supabase client with basic initialization (no problematic options)
         try:
-            self.supabase: Client = create_client(
-                self.supabase_url, 
-                self.supabase_service_key,
-                options={
-                    'schema': 'public',
-                    'headers': {},
-                    'auto_refresh_token': True,
-                    'persist_session': True
-                }
-            )
+            self.supabase: Client = create_client(self.supabase_url, self.supabase_service_key)
             logger.info("Supabase client initialized successfully")
         except Exception as e:
             logger.error(f"Failed to initialize Supabase client: {str(e)}")
-            # Fallback to basic initialization
-            self.supabase: Client = create_client(self.supabase_url, self.supabase_service_key)
-            logger.info("Supabase client initialized with fallback method")
+            raise
     
 
     
