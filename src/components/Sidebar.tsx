@@ -6,8 +6,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { useState, useEffect } from 'react'
 
 interface SidebarProps {
-  activeTab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records'
-  onTabChange: (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records') => void
+  activeTab: 'table' | 'charts' | 'feedback' | 'mbycallingagent'| 'attendance' | 'xp' | 'records'
+  onTabChange: (tab: 'table' | 'charts' | 'feedback' | 'mbycallingagent'| 'attendance' | 'xp' | 'records') => void
 }
 
 export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
@@ -57,13 +57,6 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       gradient: 'gradient-orange'
     },
     {
-      id: 'charts' as const,
-      label: 'Cohort Graphs',
-      icon: PieChart,
-      description: 'Analytics and charts',
-      gradient: 'gradient-purple'
-    },
-    {
       id: 'xp' as const,
       label: 'XP Leaderboard',
       icon: Trophy,
@@ -78,11 +71,25 @@ export default function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       gradient: 'gradient-blue'
     },
     {
+      id: 'mbycallingagent' as const,
+      label: 'Mentiby Calling Agent',
+      icon: MessageSquare,
+      description: 'Calling agent for Mentiby',
+      gradient: 'gradient-orange'
+    },
+    {
       id: 'attendance' as const,
       label: 'Attendance Upload',
       icon: Upload,
       description: 'Upload attendance CSV files',
       gradient: 'gradient-green'
+    },
+    {
+      id: 'charts' as const,
+      label: 'Cohort Graphs',
+      icon: PieChart,
+      description: 'Analytics and charts',
+      gradient: 'gradient-purple'
     }
   ]
 

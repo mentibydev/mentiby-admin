@@ -12,6 +12,7 @@ import XPLeaderboard from '@/components/XPLeaderboard'
 import AuthWrapper from '@/components/auth/AuthWrapper'
 import { Menu, X } from 'lucide-react'
 import FeedbackTable from '@/components/FeedbackTable'
+import MentibyCallingAgent from '@/components/MentibyCallingAgent'
 
 // Temporary local type definition for FeedbackData
 type FeedbackData = {
@@ -24,7 +25,7 @@ type FeedbackData = {
 }
 
 function AdminPanel() {
-  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records'>('table')
+  const [activeTab, setActiveTab] = useState<'table' | 'charts' | 'feedback'| 'mbycallingagent' | 'attendance' | 'xp' | 'records' >('table')
   const [onboardingData, setOnboardingData] = useState<OnboardingData[]>([])
   const [feedbackData, setFeedbackData] = useState<FeedbackData[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -82,7 +83,7 @@ function AdminPanel() {
     }
   }
 
-  const handleTabChange = (tab: 'table' | 'charts' | 'feedback' | 'attendance' | 'xp' | 'records') => {
+  const handleTabChange = (tab: 'table' | 'charts' | 'feedback' | 'mbycallingagent' | 'attendance' | 'xp' | 'records') => {
     setActiveTab(tab)
     setIsMobileMenuOpen(false) // Close mobile menu when tab changes
   }
@@ -129,6 +130,8 @@ function AdminPanel() {
         return <AttendanceRecords />
       case 'attendance':
         return <AttendanceUpload />
+      case 'mbycallingagent':
+        return <MentibyCallingAgent/>
       default:
         return <DataTable data={onboardingData} isLoading={isLoading} onDataUpdate={fetchData} />
     }
