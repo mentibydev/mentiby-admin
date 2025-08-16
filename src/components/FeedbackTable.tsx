@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Search } from 'lucide-react'
+import { Search, Phone, Copy, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
+import { cn } from '@/lib/utils'
 
 // FeedbackData type for feedback table
 export interface FeedbackData {
@@ -46,7 +47,20 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
   // Selection and delete mode state
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const [showDeleteMode, setShowDeleteMode] = useState(false)
+  const [showPhoneCopyMode, setShowPhoneCopyMode] = useState(false)
+  const [toastNotification, setToastNotification] = useState<{
+    show: boolean
+    message: string
+    type: 'success' | 'error'
+  }>({ show: false, message: '', type: 'success' })
 
+  // Toast notification function
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastNotification({ show: true, message, type })
+    setTimeout(() => {
+      setToastNotification({ show: false, message: '', type: 'success' })
+    }, 2000)
+  }
 
 
   // Sorting function for EnrollmentID
@@ -127,6 +141,54 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
       onDataUpdate()
     } catch (error) {
       console.error('Delete failed:', error)
+    }
+  }
+
+  const handleCopyPhoneNumbers = async () => {
+    if (selectedRows.size === 0) return
+
+    try {
+      // Fetch phone numbers from onboarding table using enrollment IDs
+      const { data: onboardingData, error } = await supabase
+        .from('onboarding')
+        .select('EnrollmentID, "Phone Number"')
+        .in('EnrollmentID', Array.from(selectedRows))
+      
+      if (error) {
+        throw new Error(`Failed to fetch phone numbers: ${error.message}`)
+      }
+
+      if (!onboardingData || onboardingData.length === 0) {
+        showToast('No phone numbers found for selected records!', 'error')
+        return
+      }
+
+      // Extract phone numbers (filter out empty/invalid ones)
+      const phoneNumbers = onboardingData
+        .map(row => row['Phone Number'])
+        .filter(phone => phone && phone.trim() !== '' && phone !== '-' && !phone.includes('undefined'))
+      
+      if (phoneNumbers.length === 0) {
+        showToast('No valid phone numbers found in selected rows!', 'error')
+        return
+      }
+
+      // Join with newlines
+      const phoneText = phoneNumbers.join('\n')
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(phoneText)
+      
+      // Clear selection and hide checkboxes
+      setSelectedRows(new Set())
+      setShowPhoneCopyMode(false)
+      
+      // Show success message
+      showToast(`📋 Copied ${phoneNumbers.length} phone numbers to clipboard!`)
+      
+    } catch (error) {
+      console.error('❌ Copy failed:', error)
+      showToast(`Failed to copy phone numbers: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error')
     }
   }
 
@@ -236,7 +298,26 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
           </button>
           <button
             onClick={() => {
+              setShowPhoneCopyMode(!showPhoneCopyMode)
+              setShowDeleteMode(false) // Hide delete mode when phone copy is active
+              if (!showPhoneCopyMode) {
+                setSelectedRows(new Set())
+              }
+            }}
+            className={cn(
+              "px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2",
+              showPhoneCopyMode
+                ? "bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 animate-pulse"
+                : "bg-gradient-to-r from-purple-500/20 via-blue-500/20 to-purple-600/20 hover:from-purple-500/30 hover:via-blue-500/30 hover:to-purple-600/30 text-purple-300 hover:text-purple-100 border border-purple-500/30 hover:border-purple-400/50"
+            )}
+          >
+            <Phone className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">Copy Phone</span>
+          </button>
+          <button
+            onClick={() => {
               setShowDeleteMode(!showDeleteMode)
+              setShowPhoneCopyMode(false) // Hide phone copy mode when delete is active
               if (!showDeleteMode) setSelectedRows(new Set())
             }}
             className={`px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 ${
@@ -245,6 +326,16 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
           >
             Delete
           </button>
+          {showPhoneCopyMode && selectedRows.size > 0 && (
+            <button
+              onClick={handleCopyPhoneNumbers}
+              disabled={isSaving}
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-gradient-to-r from-purple-600 via-blue-600 to-purple-700 text-white rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 flex items-center space-x-1 sm:space-x-2 hover:scale-105 shadow-lg shadow-purple-500/50 hover:shadow-purple-500/70 disabled:opacity-50"
+            >
+              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span>Copy ({selectedRows.size})</span>
+            </button>
+          )}
           {showDeleteMode && selectedRows.size > 0 && (
             <button
               onClick={handleDeleteRows}
@@ -294,7 +385,7 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
           <table className="w-full table-auto">
             <thead className="bg-muted/30 sticky top-0 z-10">
               <tr>
-                {showDeleteMode && (
+                {(showDeleteMode || showPhoneCopyMode) && (
                   <th className="px-2 py-3 text-left text-sm font-semibold">
                     <input
                       type="checkbox"
@@ -330,7 +421,7 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
             <tbody className="divide-y divide-border/30">
               {filteredData.map((row) => (
                 <tr key={row.EnrollmentID} className="hover:bg-muted/20">
-                  {showDeleteMode && (
+                  {(showDeleteMode || showPhoneCopyMode) && (
                     <td className="px-2 py-3">
                       <input
                         type="checkbox"
@@ -374,6 +465,32 @@ export default function FeedbackTable({ data, isLoading, onDataUpdate }: Feedbac
           )}
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toastNotification.show && (
+        <div
+          className={cn(
+            "fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-4 rounded-xl backdrop-blur-lg border transition-all duration-500 ease-out",
+            "animate-in slide-in-from-bottom-4 fade-in-0",
+            toastNotification.type === 'success'
+              ? "bg-green-500/20 border-green-500/30 text-green-300 shadow-lg shadow-green-500/20"
+              : "bg-red-500/20 border-red-500/30 text-red-300 shadow-lg shadow-red-500/20"
+          )}
+        >
+          <div className="flex items-center space-x-3">
+            {toastNotification.type === 'success' ? (
+              <div className="w-5 h-5 rounded-full bg-green-500/30 flex items-center justify-center">
+                <Copy className="w-3 h-3 text-green-400" />
+              </div>
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-red-500/30 flex items-center justify-center">
+                <X className="w-3 h-3 text-red-400" />
+              </div>
+            )}
+            <span className="text-sm font-medium">{toastNotification.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
