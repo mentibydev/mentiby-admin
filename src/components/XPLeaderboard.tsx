@@ -627,12 +627,9 @@ export default function XPLeaderboard() {
           <div className="overflow-x-auto">
             <div className="min-w-full">
               {/* Header */}
-              <div className={cn(
-                "grid gap-4 p-4 border-b border-border/50 bg-muted/20 text-sm font-semibold text-muted-foreground",
-                showPhoneCopyMode ? "grid-cols-13" : "grid-cols-12"
-              )}>
+              <div className="flex items-center gap-4 p-4 border-b border-border/50 bg-muted/20 text-sm font-semibold text-muted-foreground">
                 {showPhoneCopyMode && (
-                  <div className="col-span-1 flex items-center">
+                  <div className="w-8 flex-shrink-0 flex items-center">
                     <input
                       type="checkbox"
                       checked={selectedRows.size === filteredLeaderboard.length && filteredLeaderboard.length > 0}
@@ -641,12 +638,12 @@ export default function XPLeaderboard() {
                     />
                   </div>
                 )}
-                <div className="col-span-1">Rank</div>
-                <div className="col-span-2">ID</div>
-                <div className="col-span-3">Name</div>
-                <div className="col-span-2">Cohort</div>
-                <div className="col-span-2">Batch</div>
-                <div className="col-span-2 text-right">XP</div>
+                <div className="w-16 flex-shrink-0">Rank</div>
+                <div className="w-32 flex-shrink-0">ID</div>
+                <div className="flex-1 min-w-0">Name</div>
+                <div className="w-24 flex-shrink-0">Cohort</div>
+                <div className="w-20 flex-shrink-0">Batch</div>
+                <div className="w-24 flex-shrink-0 text-right">XP</div>
               </div>
 
               {/* Leaderboard Entries */}
@@ -655,13 +652,12 @@ export default function XPLeaderboard() {
                   <div
                     key={entry.email}
                     className={cn(
-                      "grid gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.01]",
-                      showPhoneCopyMode ? "grid-cols-13" : "grid-cols-12",
+                      "flex items-center gap-4 p-4 rounded-xl transition-all duration-300 hover:scale-[1.01]",
                       getRankStyle(index + 1)
                     )}
                   >
                     {showPhoneCopyMode && (
-                      <div className="col-span-1 flex items-center">
+                      <div className="w-8 flex-shrink-0 flex items-center">
                         <input
                           type="checkbox"
                           checked={selectedRows.has(entry.enrollment_id)}
@@ -670,33 +666,33 @@ export default function XPLeaderboard() {
                         />
                       </div>
                     )}
-                    <div className="col-span-1 flex items-center gap-2">
+                    <div className="w-16 flex-shrink-0 flex items-center gap-2">
                       {getRankIcon(index + 1)}
                       <span className="font-bold">{index + 1}</span>
                     </div>
 
-                    <div className="col-span-2 font-mono text-sm">
+                    <div className="w-32 flex-shrink-0 font-mono text-sm">
                       {entry.enrollment_id}
                     </div>
 
-                    <div className="col-span-3">
+                    <div className="flex-1 min-w-0">
                       <div className="font-semibold truncate">{entry.full_name}</div>
                       <div className="text-xs opacity-70 truncate">{entry.email}</div>
                     </div>
 
-                    <div className="col-span-2">
+                    <div className="w-24 flex-shrink-0">
                       <span className="px-2 py-1 bg-background/20 rounded-lg text-xs font-medium">
                         {entry.cohort_type}
                       </span>
                     </div>
 
-                    <div className="col-span-2">
+                    <div className="w-20 flex-shrink-0">
                       <span className="px-2 py-1 bg-background/20 rounded-lg text-xs font-medium">
                         {entry.cohort_number}
                       </span>
                     </div>
 
-                    <div className="col-span-2 text-right">
+                    <div className="w-24 flex-shrink-0 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <Zap className="w-4 h-4 text-yellow-400" />
                         <span className="font-bold text-lg">{formatXP(entry.xp)}</span>
